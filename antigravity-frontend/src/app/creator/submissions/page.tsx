@@ -1,19 +1,75 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+"use client";
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ExternalLink, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
+import { ExternalLink, CheckCircle2, XCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { api } from '@/lib/api';
+import Cookies from 'js-cookie';
 
-const submissions = [
-    { id: 'SUB-9982', campaign: 'Nike Run Club', date: '2026-02-27', status: 'approved', reward: '$45.00', aiConfidence: 0.98 },
-    { id: 'SUB-9981', campaign: 'WebFlow Partner', date: '2026-02-26', status: 'pending', reward: 'TBD', aiConfidence: null },
-    { id: 'SUB-9980', campaign: 'Gymshark Summer', date: '2026-02-25', status: 'rejected', reward: '$0.00', aiConfidence: 0.45 },
-    { id: 'SUB-9979', campaign: 'Nike Run Club', date: '2026-02-24', status: 'approved', reward: '$50.00', aiConfidence: 0.99 },
-    { id: 'SUB-9978', campaign: 'Vercel Launch', date: '2026-02-24', status: 'under_review', reward: 'TBD', aiConfidence: 0.75 },
-];
+interface Submission {
+    id: string;
+    campaignId: string;
+    contentUrl: string;
+    status: string;
+    aiConfidence?: number;
+    createdAt: string;
+}
 
 export default function CreatorSubmissionsPage() {
+    const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    // Quick submission state
+    const [showSubmit, setShowSubmit] = useState(false);
+    const [campaignId, setCampaignId] = useState('');
+    const [contentUrl, setContentUrl] = useState('');
+    const [submitLoading, setSubmitLoading] = useState(false);
+
+    const fetchSubmissions = async () => {
+        setLoading(true);
+        try {
+            // For now, getting all submissions as we don't have the creator ID easily available in frontend state
+            // In a real app we'd decode the JWT or have an auth context
+            const response = await api.get('/submission');
+            setSubmissions(response.data);
+            setError('');
+        } catch (err: any) {
+            console.error("Failed to fetch submissions:", err);
+            setError('Failed to load submissions. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSubmissions();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitLoading(true);
+        try {
+            await api.post('/submission', {
+                campaignId,
+                contentUrl,
+            });
+            setShowSubmit(false);
+            setCampaignId('');
+            setContentUrl('');
+            fetchSubmissions(); // Refresh list
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to submit content.');
+        } finally {
+            setSubmitLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-6 w-full">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -23,10 +79,54 @@ export default function CreatorSubmissionsPage() {
                         Track your campaign submissions and review AI verification statuses.
                     </p>
                 </div>
-                <Button asChild>
-                    <Link href="/creator/campaigns">New Submission</Link>
+                <Button onClick={() => setShowSubmit(!showSubmit)}>
+                    {showSubmit ? 'Cancel' : 'New Submission'}
                 </Button>
             </div>
+
+            {error && (
+                <div className="p-4 bg-destructive/10 text-destructive rounded-md border border-destructive/20">
+                    {error}
+                </div>
+            )}
+
+            {showSubmit && (
+                <Card className="border-primary/50 shadow-md">
+                    <CardHeader>
+                        <CardTitle>Submit Content</CardTitle>
+                        <CardDescription>Submit your clip or post for AI verification.</CardDescription>
+                    </CardHeader>
+                    <form onSubmit={handleSubmit}>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Campaign ID</Label>
+                                <Input
+                                    required
+                                    placeholder="e.g. cm7o2x..."
+                                    value={campaignId}
+                                    onChange={(e) => setCampaignId(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Content URL</Label>
+                                <Input
+                                    required
+                                    type="url"
+                                    placeholder="https://tiktok.com/@user/video/..."
+                                    value={contentUrl}
+                                    onChange={(e) => setContentUrl(e.target.value)}
+                                />
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" disabled={submitLoading}>
+                                {submitLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Verify & Submit
+                            </Button>
+                        </CardFooter>
+                    </form>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader>
@@ -34,50 +134,60 @@ export default function CreatorSubmissionsPage() {
                     <CardDescription>A list of your recent content submissions.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>ID</TableHead>
-                                <TableHead>Campaign</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>AI Confidence</TableHead>
-                                <TableHead className="text-right">Estimated Reward</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {submissions.map((sub) => (
-                                <TableRow key={sub.id}>
-                                    <TableCell className="font-medium">{sub.id}</TableCell>
-                                    <TableCell>{sub.campaign}</TableCell>
-                                    <TableCell>{sub.date}</TableCell>
-                                    <TableCell>
-                                        {sub.status === 'approved' && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</Badge>}
-                                        {sub.status === 'pending' && <Badge variant="outline"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>}
-                                        {sub.status === 'rejected' && <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>}
-                                        {sub.status === 'under_review' && <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20"><AlertCircle className="w-3 h-3 mr-1" /> Manual Review</Badge>}
-                                    </TableCell>
-                                    <TableCell>
-                                        {sub.aiConfidence ? (
-                                            <span className={sub.aiConfidence > 0.9 ? 'text-emerald-500' : sub.aiConfidence > 0.7 ? 'text-amber-500' : 'text-destructive'}>
-                                                {(sub.aiConfidence * 100).toFixed(0)}%
-                                            </span>
-                                        ) : (
-                                            <span className="text-muted-foreground">-</span>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">{sub.reward}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                                            <span className="sr-only">Details</span>
-                                        </Button>
-                                    </TableCell>
+                    {loading ? (
+                        <div className="flex items-center justify-center p-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : submissions.length === 0 ? (
+                        <div className="text-center p-8 text-muted-foreground">
+                            No submissions found.
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Campaign ID</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>AI Confidence</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {submissions.map((sub) => (
+                                    <TableRow key={sub.id}>
+                                        <TableCell className="font-medium text-xs font-mono">{sub.id.substring(0, 8)}...</TableCell>
+                                        <TableCell className="text-xs font-mono">{sub.campaignId.substring(0, 8)}...</TableCell>
+                                        <TableCell>{new Date(sub.createdAt).toLocaleDateString()}</TableCell>
+                                        <TableCell>
+                                            {sub.status === 'APPROVED' && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</Badge>}
+                                            {sub.status === 'PENDING' && <Badge variant="outline"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>}
+                                            {sub.status === 'REJECTED' && <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>}
+                                            {sub.status === 'FLAGGED' && <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20"><AlertCircle className="w-3 h-3 mr-1" /> Flagged</Badge>}
+                                        </TableCell>
+                                        <TableCell>
+                                            {sub.aiConfidence ? (
+                                                <span className={sub.aiConfidence > 0.9 ? 'text-emerald-500' : sub.aiConfidence > 0.7 ? 'text-amber-500' : 'text-destructive'}>
+                                                    {(sub.aiConfidence * 100).toFixed(0)}%
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground">-</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
+                                                <a href={sub.contentUrl} target="_blank" rel="noopener noreferrer">
+                                                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="sr-only">Details</span>
+                                                </a>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
             </Card>
         </div>

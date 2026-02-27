@@ -1,10 +1,44 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Play, DollarSign } from 'lucide-react';
+import { Search, Filter, Play, DollarSign, Loader2 } from 'lucide-react';
+import { api } from '@/lib/api';
+
+interface Campaign {
+    id: string;
+    title: string;
+    description: string;
+    rewardPool: number;
+    platform: string;
+    metricsReq: any;
+    status: string;
+}
 
 export default function CreatorCampaignsPage() {
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchCampaigns = async () => {
+            try {
+                const response = await api.get('/campaign');
+                setCampaigns(response.data);
+            } catch (err: any) {
+                console.error("Failed to fetch campaigns:", err);
+                setError('Failed to load campaigns. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCampaigns();
+    }, []);
+
     return (
         <div className="flex flex-col gap-6 w-full">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -30,48 +64,64 @@ export default function CreatorCampaignsPage() {
                 </Button>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Card key={i} className="flex flex-col transition-all hover:shadow-md hover:border-primary/50">
-                        <CardHeader>
-                            <div className="flex items-center justify-between mb-2">
-                                <Badge variant="outline" className={i % 2 === 0 ? "text-blue-500 border-blue-500/50" : "text-primary border-primary/50"}>
-                                    {i % 2 === 0 ? 'Affiliate' : 'Clipping'}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground flex items-center font-medium">
-                                    <Play className="h-3 w-3 mr-1" /> Active
-                                </span>
-                            </div>
-                            <CardTitle>Campaign Header {i}</CardTitle>
-                            <CardDescription>
-                                Brief description of the campaign goals and target audience. Looking for engaging content.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-1">
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Min. Followers:</span>
-                                    <span className="font-medium">10,000</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Reward Pool:</span>
-                                    <span className="font-medium text-primary flex items-center">
-                                        <DollarSign className="h-3 w-3" />
-                                        {5000 * i}
+            {error && (
+                <div className="p-4 bg-destructive/10 text-destructive rounded-md border border-destructive/20">
+                    {error}
+                </div>
+            )}
+
+            {loading ? (
+                <div className="flex items-center justify-center p-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : campaigns.length === 0 && !error ? (
+                <div className="text-center p-12 border rounded-xl bg-muted/20 text-muted-foreground">
+                    No active campaigns found at the moment. Check back later!
+                </div>
+            ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {campaigns.map((campaign) => (
+                        <Card key={campaign.id} className="flex flex-col transition-all hover:shadow-md hover:border-primary/50">
+                            <CardHeader>
+                                <div className="flex items-center justify-between mb-2">
+                                    <Badge variant="outline" className={campaign.platform === 'TIKTOK' ? "text-primary border-primary/50" : "text-blue-500 border-blue-500/50"}>
+                                        {campaign.platform}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground flex items-center font-medium">
+                                        <Play className="h-3 w-3 mr-1" /> {campaign.status}
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-muted-foreground">Requirements:</span>
-                                    <span className="font-medium">#ad #sponsor</span>
+                                <CardTitle>{campaign.title}</CardTitle>
+                                <CardDescription className="line-clamp-2">
+                                    {campaign.description}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Min. Views Req:</span>
+                                        <span className="font-medium">{campaign.metricsReq?.minViews || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Reward Pool:</span>
+                                        <span className="font-medium text-primary flex items-center">
+                                            <DollarSign className="h-3 w-3" />
+                                            {campaign.rewardPool}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-muted-foreground">Requirements:</span>
+                                        <span className="font-medium truncate max-w-[120px]">{campaign.metricsReq?.requiredHashtags?.join(', ') || 'None'}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button className="w-full">Apply Now</Button>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="w-full">Submit Content</Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
