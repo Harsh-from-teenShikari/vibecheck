@@ -50,4 +50,10 @@ export class CampaignService {
             where: { id: campaignId },
         });
     }
+
+    async getAllCampaigns() {
+        return await this.prisma.campaign.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 }

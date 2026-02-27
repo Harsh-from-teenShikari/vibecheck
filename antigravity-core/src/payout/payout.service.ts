@@ -70,4 +70,18 @@ export class PayoutService {
             }
         });
     }
+
+    async getPayoutHistory(userId: string) {
+        // Resolve CreatorProfile from User ID
+        const profile = await this.prisma.creatorProfile.findUnique({
+            where: { userId }
+        });
+
+        if (!profile) return [];
+
+        return await this.prisma.payout.findMany({
+            where: { creatorId: profile.id },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 }

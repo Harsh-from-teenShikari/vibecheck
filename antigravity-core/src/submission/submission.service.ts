@@ -48,4 +48,36 @@ export class SubmissionService {
 
         return submission;
     }
+
+    async getCreatorSubmissions() {
+        // Mock method to retrieve submissions for a hardcoded user ID.
+        // In reality, this would extract the user ID from the JWT request payload.
+        return await this.prisma.submission.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async getFlaggedSubmissions() {
+        return await this.prisma.submission.findMany({
+            where: {
+                OR: [
+                    { status: 'under_review' },
+                    { fraudScore: { gt: 0.7 } }
+                ]
+            },
+            include: {
+                creator: { select: { user: { select: { email: true } }, region: true } },
+                campaign: { select: { name: true } }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async verifySubmission(id: string, status: 'approved' | 'rejected') {
+        this.logger.log(`Manual Verification for Submission ${id}: ${status}`);
+        return await this.prisma.submission.update({
+            where: { id },
+            data: { status }
+        });
+    }
 }

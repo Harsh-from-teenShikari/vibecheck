@@ -1,4 +1,4 @@
-import { Controller, Logger, Post, Body } from '@nestjs/common';
+import { Controller, Logger, Post, Body, Get, Param } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { PayoutService } from './payout.service';
 import { CreatePayoutDto } from './dto/payout.dto';
@@ -19,5 +19,10 @@ export class PayoutController {
         this.logger.log(`Ledger event caught [PayoutProcessed] for: ${message.payoutId}`);
 
         await this.payoutService.handlePayoutConfirmation(message);
+    }
+
+    @Get('history/:creatorId')
+    async getPayoutHistory(@Param('creatorId') creatorId: string) {
+        return await this.payoutService.getPayoutHistory(creatorId);
     }
 }

@@ -64,6 +64,17 @@ let PayoutService = PayoutService_1 = class PayoutService {
             }
         });
     }
+    async getPayoutHistory(userId) {
+        const profile = await this.prisma.creatorProfile.findUnique({
+            where: { userId }
+        });
+        if (!profile)
+            return [];
+        return await this.prisma.payout.findMany({
+            where: { creatorId: profile.id },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 };
 exports.PayoutService = PayoutService;
 exports.PayoutService = PayoutService = PayoutService_1 = __decorate([

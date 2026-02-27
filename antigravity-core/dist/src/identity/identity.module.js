@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IdentityModule = void 0;
 const common_1 = require("@nestjs/common");
 const identity_service_1 = require("./identity.service");
+const identity_controller_1 = require("./identity.controller");
 let IdentityModule = class IdentityModule {
 };
 exports.IdentityModule = IdentityModule;
 exports.IdentityModule = IdentityModule = __decorate([
     (0, common_1.Module)({
+        controllers: [identity_controller_1.IdentityController],
         providers: [identity_service_1.IdentityService]
     })
 ], IdentityModule);

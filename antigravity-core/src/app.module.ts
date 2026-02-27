@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -14,8 +15,8 @@ import { NotificationModule } from './notification/notification.module';
 import { ControlPlaneModule } from './control-plane/control-plane.module';
 
 @Module({
-  imports: [DatabaseModule, IdentityModule, CampaignModule, SubmissionModule, LedgerModule, AiVerificationModule, FraudModule, CommissionModule, PayoutModule, NotificationModule, ControlPlaneModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, IdentityModule, CampaignModule, SubmissionModule, LedgerModule, AiVerificationModule, FraudModule, CommissionModule, PayoutModule, NotificationModule, ControlPlaneModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

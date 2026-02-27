@@ -31,6 +31,9 @@ let PayoutController = PayoutController_1 = class PayoutController {
         this.logger.log(`Ledger event caught [PayoutProcessed] for: ${message.payoutId}`);
         await this.payoutService.handlePayoutConfirmation(message);
     }
+    async getPayoutHistory(creatorId) {
+        return await this.payoutService.getPayoutHistory(creatorId);
+    }
 };
 exports.PayoutController = PayoutController;
 __decorate([
@@ -47,6 +50,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PayoutController.prototype, "handlePayoutProcessed", null);
+__decorate([
+    (0, common_1.Get)('history/:creatorId'),
+    __param(0, (0, common_1.Param)('creatorId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PayoutController.prototype, "getPayoutHistory", null);
 exports.PayoutController = PayoutController = PayoutController_1 = __decorate([
     (0, common_1.Controller)('payouts'),
     __metadata("design:paramtypes", [payout_service_1.PayoutService])

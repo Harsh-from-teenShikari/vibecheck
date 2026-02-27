@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const database_module_1 = require("./database/database.module");
@@ -26,7 +27,7 @@ let AppModule = class AppModule {
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, identity_module_1.IdentityModule, campaign_module_1.CampaignModule, submission_module_1.SubmissionModule, ledger_module_1.LedgerModule, ai_verification_module_1.AiVerificationModule, fraud_module_1.FraudModule, commission_module_1.CommissionModule, payout_module_1.PayoutModule, notification_module_1.NotificationModule, control_plane_module_1.ControlPlaneModule],
+        imports: [config_1.ConfigModule.forRoot({ isGlobal: true }), database_module_1.DatabaseModule, identity_module_1.IdentityModule, campaign_module_1.CampaignModule, submission_module_1.SubmissionModule, ledger_module_1.LedgerModule, ai_verification_module_1.AiVerificationModule, fraud_module_1.FraudModule, commission_module_1.CommissionModule, payout_module_1.PayoutModule, notification_module_1.NotificationModule, control_plane_module_1.ControlPlaneModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

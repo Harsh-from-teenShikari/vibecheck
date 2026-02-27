@@ -47,6 +47,14 @@ let IdentityService = IdentityService_1 = class IdentityService {
         });
         return profile.trustScore;
     }
+    async getAllUsers() {
+        return await this.prisma.creatorProfile.findMany({
+            include: {
+                user: { select: { email: true, role: true } },
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 };
 exports.IdentityService = IdentityService;
 exports.IdentityService = IdentityService = IdentityService_1 = __decorate([

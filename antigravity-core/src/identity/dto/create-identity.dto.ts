@@ -7,6 +7,14 @@ export class CreateUserDto {
 
     @IsEnum(UserRole)
     role: UserRole;
+
+    @IsString()
+    @IsOptional()
+    password?: string;
+
+    @IsString()
+    @IsOptional()
+    name?: string;
 }
 
 export class CreateCreatorProfileDto {

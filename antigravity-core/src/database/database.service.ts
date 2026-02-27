@@ -9,6 +9,9 @@ export class DatabaseService extends PrismaClient {
 
     constructor() {
         const connectionString = process.env.DATABASE_URL;
+        if (!connectionString) {
+            throw new Error("CRITICAL: process.env.DATABASE_URL is undefined inside DatabaseService!");
+        }
         const pool = new Pool({ connectionString });
         const adapter = new PrismaPg(pool);
         super({

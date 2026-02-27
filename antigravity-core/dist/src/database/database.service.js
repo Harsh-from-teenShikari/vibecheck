@@ -19,6 +19,9 @@ let DatabaseService = DatabaseService_1 = class DatabaseService extends client_1
     logger = new common_1.Logger(DatabaseService_1.name);
     constructor() {
         const connectionString = process.env.DATABASE_URL;
+        if (!connectionString) {
+            throw new Error("CRITICAL: process.env.DATABASE_URL is undefined inside DatabaseService!");
+        }
         const pool = new pg_1.Pool({ connectionString });
         const adapter = new adapter_pg_1.PrismaPg(pool);
         super({

@@ -55,6 +55,11 @@ let CampaignService = CampaignService_1 = class CampaignService {
             where: { id: campaignId },
         });
     }
+    async getAllCampaigns() {
+        return await this.prisma.campaign.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 };
 exports.CampaignService = CampaignService;
 exports.CampaignService = CampaignService = CampaignService_1 = __decorate([

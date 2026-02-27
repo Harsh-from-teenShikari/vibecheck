@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CampaignModule = void 0;
 const common_1 = require("@nestjs/common");
 const campaign_service_1 = require("./campaign.service");
+const campaign_controller_1 = require("./campaign.controller");
 const database_module_1 = require("../database/database.module");
 let CampaignModule = class CampaignModule {
 };
@@ -16,6 +17,7 @@ exports.CampaignModule = CampaignModule;
 exports.CampaignModule = CampaignModule = __decorate([
     (0, common_1.Module)({
         imports: [database_module_1.DatabaseModule],
+        controllers: [campaign_controller_1.CampaignController],
         providers: [campaign_service_1.CampaignService],
         exports: [campaign_service_1.CampaignService]
     })

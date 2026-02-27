@@ -40,4 +40,13 @@ export class IdentityService {
         });
         return profile.trustScore;
     }
+
+    async getAllUsers() {
+        return await this.prisma.creatorProfile.findMany({
+            include: {
+                user: { select: { email: true, role: true } },
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
 }

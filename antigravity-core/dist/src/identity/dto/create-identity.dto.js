@@ -15,6 +15,8 @@ const client_1 = require("@prisma/client");
 class CreateUserDto {
     email;
     role;
+    password;
+    name;
 }
 exports.CreateUserDto = CreateUserDto;
 __decorate([
@@ -25,6 +27,16 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.UserRole),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "password", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "name", void 0);
 class CreateCreatorProfileDto {
     userId;
     niche;
