@@ -1,0 +1,51 @@
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
+import { DatabaseService } from '../database/database.service';
+import { CreateSubmissionDto } from './dto/create-submission.dto';
+
+@Injectable()
+export class SubmissionService {
+    private readonly logger = new Logger(SubmissionService.name);
+
+    constructor(
+        private prisma: DatabaseService,
+        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+    ) { }
+
+    async onModuleInit() {
+        this.kafkaClient.subscribeToResponseOf('SubmissionCreated');
+        await this.kafkaClient.connect();
+        this.logger.log('SubmissionService Kafka Client Connected');
+    }
+
+    /**
+     * Doctrine 2: Event-Driven Doctrine
+     * Saves the submission to the local datastore and immediately fires the Event to the broker
+     * for Fraud & AI Verification Services to pick up.
+     */
+    async createSubmission(dto: CreateSubmissionDto) {
+        this.logger.log(`Ingesting Submission for Campaign: ${dto.campaignId} by Creator: ${dto.creatorId}`);
+
+        // Persist to DB (Status defaults to pending)
+        const submission = await this.prisma.submission.create({
+            data: {
+                campaignId: dto.campaignId,
+                creatorId: dto.creatorId,
+                contentData: dto.contentData,
+            },
+        });
+
+        this.logger.log(`Submission ${submission.id} persisted. Emitting SubmissionCreated event.`);
+
+        // Emit to Kafka for AI Verification & Fraud Services
+        this.kafkaClient.emit('SubmissionCreated', {
+            submissionId: submission.id,
+            campaignId: submission.campaignId,
+            creatorId: submission.creatorId,
+            contentData: submission.contentData,
+            timestamp: new Date().toISOString()
+        });
+
+        return submission;
+    }
+}

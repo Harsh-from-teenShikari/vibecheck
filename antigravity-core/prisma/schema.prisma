@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 🧾 1. IDENTITY DOMAIN
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String?
+  role            UserRole @default(creator)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  creatorProfile  CreatorProfile?
+  operatorProfile OperatorProfile?
+}
+
+enum UserRole {
+  creator
+  operator
+  admin
+}
+
+// Creator Profile
+model CreatorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  niche           String
+  region          String
+  followers       Int
+  trustScore      Float    @default(0.5)
+  kycStatus       KycStatus @default(pending)
+  taxProfileId    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  submissions     Submission[]
+  commissions     Commission[]
+  payouts         Payout[]
+  fraudScores     FraudScore[]
+  trustHistory    TrustScoreHistory[]
+
+  @@index([userId])
+}
+
+// Operator Profile
+model OperatorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  department      String
+  clearanceLevel  Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+enum KycStatus {
+  pending
+  verified
+  rejected
+}
+
+// 🎯 2. CAMPAIGN DOMAIN
+model Campaign {
+  id                String          @id @default(cuid())
+  name              String
+  type              CampaignType
+  region            String
+  minFollowers      Int
+  targetNiche       String
+  requiredHashtags  Json?
+  bannedKeywords    Json?
+  requiredAssetId   String?
+  rewardPool        Int?
+  status            CampaignStatus @default(draft)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  submissions       Submission[]
+  commissions       Commission[]
+  driftMetrics      DriftMetric[]
+
+  @@index([status])
+}
+
+enum CampaignType {
+  CLIPPING
+  AFFILIATE
+}
+
+enum CampaignStatus {
+  draft
+  active
+  paused
+  ended
+}
+
+// 📤 3. SUBMISSION DOMAIN
+model Submission {
+  id                 String             @id @default(cuid())
+  campaignId         String
+  creatorId          String
+  status             SubmissionStatus   @default(pending)
+  deterministicPassed Boolean           @default(false)
+  aiConfidence       Float?
+  aiCompliance       Boolean?
+  fraudScore         Float              @default(0)
+  contentData        Json
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  campaign           Campaign           @relation(fields: [campaignId], references: [id])
+  creator            CreatorProfile     @relation(fields: [creatorId], references: [id])
+  aiReport           AiVerificationReport?
+  commission         Commission?
+  fraudScores        FraudScore[]
+
+  @@index([creatorId])
+  @@index([campaignId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum SubmissionStatus {
+  pending
+  under_review
+  approved
+  rejected
+}
+
+// 🤖 4. AI VERIFICATION DOMAIN
+model AiVerificationReport {
+  id            String   @id @default(cuid())
+  submissionId  String   @unique
+  modelUsed     String
+  eligibility   Boolean
+  compliance    Boolean
+  confidence    Float
+  riskFlags     Json?
+  reasoning     Json?
+  rawOutput     Json?    // Retention policy: delete after 30 days (cold storage)
+  createdAt     DateTime @default(now())
+
+  submission    Submission @relation(fields: [submissionId], references: [id])
+}
+
+// 🛡 5. FRAUD DOMAIN
+model FraudScore {
+  id           String   @id @default(cuid())
+  creatorId    String
+  submissionId String?
+  score        Float
+  reason       Json?
+  createdAt    DateTime @default(now())
+
+  creator      CreatorProfile @relation(fields: [creatorId], references: [id])
+  submission   Submission?    @relation(fields: [submissionId], references: [id])
+
+  @@index([creatorId])
+  @@index([createdAt])
+}
+
+// 💰 6. COMMISSION DOMAIN
+model Commission {
+  id            String   @id @default(cuid())
+  submissionId  String   @unique
+  campaignId    String
+  creatorId     String
+  amount        Int
+  currency      String   @default("USD")
+  createdAt     DateTime @default(now())
+
+  submission    Submission      @relation(fields: [submissionId], references: [id])
+  campaign      Campaign        @relation(fields: [campaignId], references: [id])
+  creator       CreatorProfile  @relation(fields: [creatorId], references: [id])
+  ledgerEntries LedgerEntry[]
+
+  @@index([creatorId])
+  @@index([campaignId])
+}
+
+// 🧾 7. LEDGER DOMAIN (CRITICAL)
+// Immutable double-entry.
+// No update, No delete constraint enforced at application edge.
+model LedgerEntry {
+  id              String   @id @default(cuid())
+  debitAccount    String
+  creditAccount   String
+  amount          Int
+  referenceType   String
+  referenceId     String   // E.g., commissionId, payoutId
+  createdAt       DateTime @default(now())
+
+  commissionId    String?
+  payoutId        String?
+  
+  commission      Commission? @relation(fields: [commissionId], references: [id])
+  payout          Payout?     @relation(fields: [payoutId], references: [id])
+
+  @@index([referenceType, referenceId])
+  @@index([createdAt]) // Essential for monthly partitioning
+  @@index([creditAccount])
+  @@index([debitAccount])
+}
+
+// 💳 8. PAYOUT DOMAIN
+model Payout {
+  id            String       @id @default(cuid())
+  creatorId     String
+  amount        Int
+  currency      String       @default("USD")
+  status        PayoutStatus @default(pending)
+  createdAt     DateTime     @default(now())
+  processedAt   DateTime?
+
+  creator       CreatorProfile @relation(fields: [creatorId], references: [id])
+  ledgerEntries LedgerEntry[]
+
+  @@index([creatorId])
+  @@index([status])
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+// 🧮 9. TRUST SCORE HISTORY
+model TrustScoreHistory {
+  id         String   @id @default(cuid())
+  creatorId  String
+  oldScore   Float
+  newScore   Float
+  reason     Json?
+  createdAt  DateTime @default(now())
+
+  creator    CreatorProfile @relation(fields: [creatorId], references: [id])
+
+  @@index([creatorId])
+}
+
+// 📊 10. DRIFT MONITORING
+model DriftMetric {
+  id             String   @id @default(cuid())
+  campaignId     String
+  approvalRate   Float
+  avgConfidence  Float
+  timestamp      DateTime @default(now())
+
+  campaign       Campaign @relation(fields: [campaignId], references: [id])
+}
+
+// 🔐 11. AUDIT LOG
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorId     String
+  action      String
+  entityType  String
+  entityId    String
+  beforeState Json?
+  afterState  Json?
+  createdAt   DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+}
