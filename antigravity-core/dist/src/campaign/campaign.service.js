@@ -43,6 +43,13 @@ let CampaignService = CampaignService_1 = class CampaignService {
             data: { status: 'active' },
         });
     }
+    async updateCampaign(campaignId, dto) {
+        this.logger.log(`Updating Campaign: ${campaignId}`);
+        return await this.prisma.campaign.update({
+            where: { id: campaignId },
+            data: dto,
+        });
+    }
     async pauseCampaign(campaignId) {
         this.logger.log(`Pausing Campaign: ${campaignId}`);
         return await this.prisma.campaign.update({
@@ -57,7 +64,32 @@ let CampaignService = CampaignService_1 = class CampaignService {
     }
     async getAllCampaigns() {
         return await this.prisma.campaign.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: {
+                _count: {
+                    select: { participants: true, submissions: true }
+                }
+            }
+        });
+    }
+    async joinCampaign(campaignId, creatorId) {
+        this.logger.log(`Creator ${creatorId} joining Campaign ${campaignId}`);
+        const existing = await this.prisma.campaignParticipant.findUnique({
+            where: {
+                campaignId_creatorId: {
+                    campaignId,
+                    creatorId
+                }
+            }
+        });
+        if (existing) {
+            return existing;
+        }
+        return await this.prisma.campaignParticipant.create({
+            data: {
+                campaignId,
+                creatorId
+            }
         });
     }
 };

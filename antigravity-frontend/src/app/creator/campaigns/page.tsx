@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Search, Filter, Play, DollarSign, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import Link from 'next/link';
 
 interface Campaign {
     id: string;
@@ -116,7 +117,11 @@ export default function CreatorCampaignsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full">Submit Content</Button>
+                                <Button asChild className="w-full">
+                                    <Link href={`/creator/campaigns/${campaign.id}`}>
+                                        View Details & Join
+                                    </Link>
+                                </Button>
                             </CardFooter>
                         </Card>
                     ))}

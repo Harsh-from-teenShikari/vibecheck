@@ -31,7 +31,7 @@ export class SubmissionService {
             data: {
                 campaignId: dto.campaignId,
                 creatorId: dto.creatorId,
-                contentData: dto.contentData,
+                contentData: { url: dto.contentUrl },
             },
         });
 

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
+import Link from 'next/link';
 import Cookies from 'js-cookie';
 
 interface Submission {
@@ -24,12 +25,6 @@ export default function CreatorSubmissionsPage() {
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    // Quick submission state
-    const [showSubmit, setShowSubmit] = useState(false);
-    const [campaignId, setCampaignId] = useState('');
-    const [contentUrl, setContentUrl] = useState('');
-    const [submitLoading, setSubmitLoading] = useState(false);
 
     const fetchSubmissions = async () => {
         setLoading(true);
@@ -51,25 +46,6 @@ export default function CreatorSubmissionsPage() {
         fetchSubmissions();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitLoading(true);
-        try {
-            await api.post('/submission', {
-                campaignId,
-                contentUrl,
-            });
-            setShowSubmit(false);
-            setCampaignId('');
-            setContentUrl('');
-            fetchSubmissions(); // Refresh list
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to submit content.');
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
     return (
         <div className="flex flex-col gap-6 w-full">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -79,8 +55,8 @@ export default function CreatorSubmissionsPage() {
                         Track your campaign submissions and review AI verification statuses.
                     </p>
                 </div>
-                <Button onClick={() => setShowSubmit(!showSubmit)}>
-                    {showSubmit ? 'Cancel' : 'New Submission'}
+                <Button asChild>
+                    <Link href="/creator/campaigns">Join a Campaign to Submit</Link>
                 </Button>
             </div>
 
@@ -88,44 +64,6 @@ export default function CreatorSubmissionsPage() {
                 <div className="p-4 bg-destructive/10 text-destructive rounded-md border border-destructive/20">
                     {error}
                 </div>
-            )}
-
-            {showSubmit && (
-                <Card className="border-primary/50 shadow-md">
-                    <CardHeader>
-                        <CardTitle>Submit Content</CardTitle>
-                        <CardDescription>Submit your clip or post for AI verification.</CardDescription>
-                    </CardHeader>
-                    <form onSubmit={handleSubmit}>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Campaign ID</Label>
-                                <Input
-                                    required
-                                    placeholder="e.g. cm7o2x..."
-                                    value={campaignId}
-                                    onChange={(e) => setCampaignId(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Content URL</Label>
-                                <Input
-                                    required
-                                    type="url"
-                                    placeholder="https://tiktok.com/@user/video/..."
-                                    value={contentUrl}
-                                    onChange={(e) => setContentUrl(e.target.value)}
-                                />
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button type="submit" disabled={submitLoading}>
-                                {submitLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Verify & Submit
-                            </Button>
-                        </CardFooter>
-                    </form>
-                </Card>
             )}
 
             <Card>

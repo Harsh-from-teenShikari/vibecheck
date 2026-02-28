@@ -14,7 +14,7 @@ const class_validator_1 = require("class-validator");
 class CreateSubmissionDto {
     campaignId;
     creatorId;
-    contentData;
+    contentUrl;
 }
 exports.CreateSubmissionDto = CreateSubmissionDto;
 __decorate([
@@ -28,8 +28,8 @@ __decorate([
     __metadata("design:type", String)
 ], CreateSubmissionDto.prototype, "creatorId", void 0);
 __decorate([
-    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", Object)
-], CreateSubmissionDto.prototype, "contentData", void 0);
+    __metadata("design:type", String)
+], CreateSubmissionDto.prototype, "contentUrl", void 0);
 //# sourceMappingURL=create-submission.dto.js.map

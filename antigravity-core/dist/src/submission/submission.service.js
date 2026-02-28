@@ -36,7 +36,7 @@ let SubmissionService = SubmissionService_1 = class SubmissionService {
             data: {
                 campaignId: dto.campaignId,
                 creatorId: dto.creatorId,
-                contentData: dto.contentData,
+                contentData: { url: dto.contentUrl },
             },
         });
         this.logger.log(`Submission ${submission.id} persisted. Emitting SubmissionCreated event.`);

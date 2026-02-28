@@ -9,7 +9,7 @@ export class CreateSubmissionDto {
     @IsNotEmpty()
     creatorId: string;
 
-    @IsObject()
+    @IsString()
     @IsNotEmpty()
-    contentData: Record<string, any>;
+    contentUrl: string;
 }

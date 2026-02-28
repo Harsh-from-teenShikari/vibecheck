@@ -6,21 +6,21 @@ export declare class PayoutController {
     constructor(payoutService: PayoutService);
     initiatePayout(body: CreatePayoutDto): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.PayoutStatus;
+        creatorId: string;
         amount: number;
         currency: string;
-        status: import("@prisma/client").$Enums.PayoutStatus;
-        createdAt: Date;
         processedAt: Date | null;
-        creatorId: string;
     }>;
     handlePayoutProcessed(message: any): Promise<void>;
     getPayoutHistory(creatorId: string): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.PayoutStatus;
+        creatorId: string;
         amount: number;
         currency: string;
-        status: import("@prisma/client").$Enums.PayoutStatus;
-        createdAt: Date;
         processedAt: Date | null;
-        creatorId: string;
     }[]>;
 }

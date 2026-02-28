@@ -45,6 +45,7 @@ model CreatorProfile {
   payouts         Payout[]
   fraudScores     FraudScore[]
   trustHistory    TrustScoreHistory[]
+  participatingIn CampaignParticipant[]
 
   @@index([userId])
 }
@@ -86,6 +87,7 @@ model Campaign {
   submissions       Submission[]
   commissions       Commission[]
   driftMetrics      DriftMetric[]
+  participants      CampaignParticipant[]
 
   @@index([status])
 }
@@ -100,6 +102,20 @@ enum CampaignStatus {
   active
   paused
   ended
+}
+
+model CampaignParticipant {
+  id           String         @id @default(cuid())
+  campaignId   String
+  creatorId    String
+  joinedAt     DateTime       @default(now())
+
+  campaign     Campaign       @relation(fields: [campaignId], references: [id])
+  creator      CreatorProfile @relation(fields: [creatorId], references: [id])
+
+  @@unique([campaignId, creatorId])
+  @@index([creatorId])
+  @@index([campaignId])
 }
 
 // 📤 3. SUBMISSION DOMAIN
