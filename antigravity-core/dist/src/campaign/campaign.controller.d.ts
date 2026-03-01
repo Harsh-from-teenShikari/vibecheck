@@ -1,85 +1,9 @@
-import { DatabaseService } from '../database/database.service';
+import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
-export declare class CampaignService {
-    private prisma;
-    private readonly logger;
-    constructor(prisma: DatabaseService);
-    createCampaign(dto: CreateCampaignDto): Promise<{
-        id: string;
-        region: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        type: import("@prisma/client").$Enums.CampaignType;
-        minFollowers: number;
-        targetNiche: string;
-        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
-        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
-        requiredAssetId: string | null;
-        rewardPool: number | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-    }>;
-    activateCampaign(campaignId: string): Promise<{
-        id: string;
-        region: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        type: import("@prisma/client").$Enums.CampaignType;
-        minFollowers: number;
-        targetNiche: string;
-        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
-        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
-        requiredAssetId: string | null;
-        rewardPool: number | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-    }>;
-    updateCampaign(campaignId: string, dto: UpdateCampaignDto): Promise<{
-        id: string;
-        region: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        type: import("@prisma/client").$Enums.CampaignType;
-        minFollowers: number;
-        targetNiche: string;
-        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
-        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
-        requiredAssetId: string | null;
-        rewardPool: number | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-    }>;
-    pauseCampaign(campaignId: string): Promise<{
-        id: string;
-        region: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        type: import("@prisma/client").$Enums.CampaignType;
-        minFollowers: number;
-        targetNiche: string;
-        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
-        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
-        requiredAssetId: string | null;
-        rewardPool: number | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-    }>;
-    getCampaignDetails(campaignId: string): Promise<{
-        id: string;
-        region: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        type: import("@prisma/client").$Enums.CampaignType;
-        minFollowers: number;
-        targetNiche: string;
-        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
-        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
-        requiredAssetId: string | null;
-        rewardPool: number | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-    }>;
+export declare class CampaignController {
+    private readonly campaignService;
+    constructor(campaignService: CampaignService);
     getAllCampaigns(): Promise<({
         _count: {
             submissions: number;
@@ -100,6 +24,81 @@ export declare class CampaignService {
         rewardPool: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
     })[]>;
+    getCampaignDetails(id: string): Promise<{
+        id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string;
+        type: import("@prisma/client").$Enums.CampaignType;
+        minFollowers: number;
+        targetNiche: string;
+        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
+        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
+        requiredAssetId: string | null;
+        rewardPool: number | null;
+        status: import("@prisma/client").$Enums.CampaignStatus;
+    }>;
+    createCampaign(createCampaignDto: CreateCampaignDto): Promise<{
+        id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string;
+        type: import("@prisma/client").$Enums.CampaignType;
+        minFollowers: number;
+        targetNiche: string;
+        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
+        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
+        requiredAssetId: string | null;
+        rewardPool: number | null;
+        status: import("@prisma/client").$Enums.CampaignStatus;
+    }>;
+    updateCampaign(id: string, updateCampaignDto: UpdateCampaignDto): Promise<{
+        id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string;
+        type: import("@prisma/client").$Enums.CampaignType;
+        minFollowers: number;
+        targetNiche: string;
+        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
+        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
+        requiredAssetId: string | null;
+        rewardPool: number | null;
+        status: import("@prisma/client").$Enums.CampaignStatus;
+    }>;
+    activateCampaign(id: string): Promise<{
+        id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string;
+        type: import("@prisma/client").$Enums.CampaignType;
+        minFollowers: number;
+        targetNiche: string;
+        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
+        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
+        requiredAssetId: string | null;
+        rewardPool: number | null;
+        status: import("@prisma/client").$Enums.CampaignStatus;
+    }>;
+    pauseCampaign(id: string): Promise<{
+        id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string;
+        type: import("@prisma/client").$Enums.CampaignType;
+        minFollowers: number;
+        targetNiche: string;
+        requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
+        bannedKeywords: import("@prisma/client/runtime/client").JsonValue | null;
+        requiredAssetId: string | null;
+        rewardPool: number | null;
+        status: import("@prisma/client").$Enums.CampaignStatus;
+    }>;
     joinCampaign(campaignId: string, creatorId: string): Promise<{
         id: string;
         campaignId: string;

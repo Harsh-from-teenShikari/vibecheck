@@ -6,23 +6,23 @@ export declare class IdentityService {
     constructor(prisma: DatabaseService);
     createUser(dto: CreateUserDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string;
         passwordHash: string | null;
         role: import("@prisma/client").$Enums.UserRole;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     createCreatorProfile(dto: CreateCreatorProfileDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        userId: string;
         niche: string;
         region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getCreatorTrustScore(creatorId: string): Promise<number>;
     getAllUsers(): Promise<({
@@ -32,14 +32,14 @@ export declare class IdentityService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
+        userId: string;
         niche: string;
         region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
 }
