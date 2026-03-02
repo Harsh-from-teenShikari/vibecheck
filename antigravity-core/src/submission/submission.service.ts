@@ -75,9 +75,19 @@ export class SubmissionService {
 
     async verifySubmission(id: string, status: 'approved' | 'rejected') {
         this.logger.log(`Manual Verification for Submission ${id}: ${status}`);
-        return await this.prisma.submission.update({
+        const submission = await this.prisma.submission.update({
             where: { id },
             data: { status }
         });
+
+        // Emit VerificationCompleted so Commission Service calculates payouts
+        this.kafkaClient.emit('VerificationCompleted', {
+            submissionId: id,
+            state: status,
+            creatorId: submission.creatorId,
+            campaignId: submission.campaignId,
+        });
+
+        return submission;
     }
 }

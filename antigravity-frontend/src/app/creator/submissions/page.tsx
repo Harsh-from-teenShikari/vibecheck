@@ -99,10 +99,11 @@ export default function CreatorSubmissionsPage() {
                                         <TableCell className="text-xs font-mono">{sub.campaignId.substring(0, 8)}...</TableCell>
                                         <TableCell>{new Date(sub.createdAt).toLocaleDateString()}</TableCell>
                                         <TableCell>
-                                            {sub.status === 'APPROVED' && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</Badge>}
-                                            {sub.status === 'PENDING' && <Badge variant="outline"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>}
-                                            {sub.status === 'REJECTED' && <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>}
-                                            {sub.status === 'FLAGGED' && <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20"><AlertCircle className="w-3 h-3 mr-1" /> Flagged</Badge>}
+                                            {sub.status.toUpperCase() === 'APPROVED' && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</Badge>}
+                                            {(sub.status.toUpperCase() === 'PENDING' || sub.status.toUpperCase() === 'DRAFT') && <Badge variant="outline"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>}
+                                            {sub.status.toUpperCase() === 'UNDER_REVIEW' && <Badge className="bg-blue-500/20 text-blue-500 hover:bg-blue-500/20" variant="secondary"><Clock className="w-3 h-3 mr-1" /> Under Review</Badge>}
+                                            {sub.status.toUpperCase() === 'REJECTED' && <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Rejected</Badge>}
+                                            {sub.status.toUpperCase() === 'FLAGGED' && <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/20"><AlertCircle className="w-3 h-3 mr-1" /> Flagged</Badge>}
                                         </TableCell>
                                         <TableCell>
                                             {sub.aiConfidence ? (

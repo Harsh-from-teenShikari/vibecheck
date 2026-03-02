@@ -9,4 +9,6 @@ export declare class CreateCampaignDto {
     bannedKeywords?: Record<string, any>;
     requiredAssetId?: string;
     rewardPool?: number;
+    targetMetric?: number;
+    targetReward?: number;
 }

@@ -29,14 +29,14 @@ export declare class IdentityController {
         };
     } & {
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
         niche: string;
-        region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
 }

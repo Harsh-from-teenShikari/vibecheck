@@ -31,4 +31,12 @@ export class CreateCampaignDto {
     @IsOptional()
     @IsNumber()
     rewardPool?: number;
+
+    @IsOptional()
+    @IsNumber()
+    targetMetric?: number;
+
+    @IsOptional()
+    @IsNumber()
+    targetReward?: number;
 }

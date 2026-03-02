@@ -58,7 +58,8 @@ export class AiVerificationService {
         });
 
         // Update Submission Status & Emit Completion
-        const state = (aiResult.compliance && aiResult.eligibility) ? 'approved' : 'rejected';
+        // Manual Verification change: AI just scores it and leaves it in 'under_review' for operator
+        const state = 'under_review';
 
         await this.prisma.submission.update({
             where: { id: submission.id },
@@ -70,15 +71,10 @@ export class AiVerificationService {
             }
         });
 
-        this.logger.log(`Submission ${submission.id} evaluated. State: ${state}`);
+        this.logger.log(`Submission ${submission.id} evaluated. Queued for manual verification.`);
 
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId: submission.id,
-            state: state,
-            aiConfidence: aiResult.confidence,
-            creatorId: submission.creatorId,
-            campaignId: submission.campaignId,
-        });
+        // Force Commission to wait until manual Operator Verification emits 'VerificationCompleted'
+        // this.kafkaClient.emit('VerificationCompleted', ...)
     }
 
     private checkEligibility(submission: any): boolean {
@@ -112,17 +108,13 @@ export class AiVerificationService {
     }
 
     private async rejectEarly(submissionId: string, reason: string) {
-        this.logger.log(`Rejecting Submission ${submissionId} Early: ${reason}`);
+        this.logger.log(`Evaluating Submission ${submissionId} Early: ${reason}. Queuing for manual rejection.`);
 
         await this.prisma.submission.update({
             where: { id: submissionId },
-            data: { status: 'rejected', deterministicPassed: false }
+            data: { status: 'under_review', deterministicPassed: false }
         });
 
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId,
-            state: 'rejected',
-            reason,
-        });
+        // Do not emit VerificationCompleted so it shows up in manual review queue
     }
 }

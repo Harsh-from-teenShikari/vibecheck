@@ -9,9 +9,9 @@ export declare class SubmissionService {
     onModuleInit(): Promise<void>;
     createSubmission(dto: CreateSubmissionDto): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -22,9 +22,9 @@ export declare class SubmissionService {
     }>;
     getCreatorSubmissions(): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -34,20 +34,20 @@ export declare class SubmissionService {
         creatorId: string;
     }[]>;
     getFlaggedSubmissions(): Promise<({
+        campaign: {
+            name: string;
+        };
         creator: {
             region: string;
             user: {
                 email: string;
             };
         };
-        campaign: {
-            name: string;
-        };
     } & {
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -58,9 +58,9 @@ export declare class SubmissionService {
     })[]>;
     verifySubmission(id: string, status: 'approved' | 'rejected'): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;

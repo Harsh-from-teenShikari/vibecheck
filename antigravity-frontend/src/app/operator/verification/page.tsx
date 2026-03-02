@@ -85,10 +85,17 @@ export default function OperatorVerification() {
                                         <span className="font-semibold text-right max-w-[150px] truncate">Manual Review Required</span>
                                     </div>
 
-                                    <div className="aspect-video w-full bg-muted rounded-md mt-4 flex items-center justify-center relative overflow-hidden group border border-border cursor-pointer hover:border-primary/50 transition-colors">
+                                    <a
+                                        href={submission.contentData?.url || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="aspect-video w-full bg-muted rounded-md mt-4 flex items-center justify-center relative overflow-hidden group border border-border cursor-pointer hover:border-primary/50 transition-colors"
+                                    >
                                         <PlayCircle className="h-10 w-10 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
-                                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">Preview</span>
-                                    </div>
+                                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded flex items-center">
+                                            View Details
+                                        </span>
+                                    </a>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-between pt-4 border-t">

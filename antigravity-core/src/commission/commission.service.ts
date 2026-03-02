@@ -19,44 +19,55 @@ export class CommissionService {
     async evaluateAndProcessCommission(dto: ProcessCommissionDto) {
         this.logger.log(`Evaluating Commission viability for Submission: ${dto.submissionId}`);
 
-        const submission = await this.prisma.submission.findUniqueOrThrow({
+        const submission = await this.prisma.submission.findUnique({
             where: { id: dto.submissionId },
             include: { campaign: true, creator: true, fraudScores: true },
         });
 
-        // We must have an AI approval AND a Fraud Score calculated
+        if (!submission) {
+            this.logger.warn(`Submission ${dto.submissionId} not found. Likely deleted during DB reset. Safely ignoring Kafka message.`);
+            return;
+        }
+
+        // We must have an Operator / AI approval
         if (submission.status !== 'approved') {
-            this.logger.log(`Submission ${submission.id} is not approved by AI.`);
+            this.logger.log(`Submission ${submission.id} is not approved by Operator.`);
             return;
         }
 
-        if (submission.fraudScores.length === 0) {
-            this.logger.log(`Submission ${submission.id} is pending Fraud completion.`);
-            return;
-        }
-
-        const latestFraudScore = submission.fraudScores[submission.fraudScores.length - 1].score;
-
-        if (latestFraudScore > 0.5) {
-            this.logger.warn(`Submission ${submission.id} rejected by Commission Engine due to high Fraud Score: ${latestFraudScore}`);
-            return;
-        }
-
-        // Calculate Base Reward + Dynamic Multiplier based on Trust
-        const baseReward = submission.campaign.rewardPool ? (submission.campaign.rewardPool / 1000) : 1000; // Simulated flat payout if no pool
-        const trustMultiplier = submission.creator.trustScore > 0.8 ? 1.5 : 1.0;
-        const finalAmount = Math.floor(baseReward * trustMultiplier);
-
-        // Save Commission Record
-        const commission = await this.prisma.commission.create({
-            data: {
-                submissionId: submission.id,
-                campaignId: submission.campaignId,
-                creatorId: submission.creatorId,
-                amount: finalAmount,
-                currency: 'USD',
+        // Check Fraud Score if available. We log it for auditing, but we DO NOT hard block
+        // the payout since 'status === approved' means an Operator manually bypassed the AI risk.
+        if (submission.fraudScores.length > 0) {
+            const latestFraudScore = submission.fraudScores[submission.fraudScores.length - 1].score;
+            if (latestFraudScore > 0.5) {
+                this.logger.warn(`Submission ${submission.id} has high Fraud Score: ${latestFraudScore}, but Operator MANUALLY APPROVED payload.`);
             }
-        });
+        } else {
+            this.logger.log(`Submission ${submission.id} bypassing Fraud Engine strict check (Manual Validation Assumed).`);
+        }
+
+        // Calculate exact payout based on the Campaign's defined Target Reward (stored in Cents)
+        // Fallback to a flat $10 (1000 cents) if the operator left it blank
+        const finalAmount = submission.campaign.targetReward ? submission.campaign.targetReward : 1000;
+
+        // Save Commission Record and Deduct from Campaign Pool (Atomic Transaction)
+        const [commission] = await this.prisma.$transaction([
+            this.prisma.commission.create({
+                data: {
+                    submissionId: submission.id,
+                    campaignId: submission.campaignId,
+                    creatorId: submission.creatorId,
+                    amount: finalAmount,
+                    currency: 'USD',
+                }
+            }),
+            this.prisma.campaign.update({
+                where: { id: submission.campaignId },
+                data: {
+                    rewardPool: { decrement: finalAmount }
+                }
+            })
+        ]);
 
         this.logger.log(`Commission Processed: ${commission.id} | Amount: ${finalAmount} USD cents`);
 

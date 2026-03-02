@@ -4,20 +4,20 @@ export declare class SubmissionController {
     private readonly submissionService;
     constructor(submissionService: SubmissionService);
     getFlaggedSubmissions(): Promise<({
+        campaign: {
+            name: string;
+        };
         creator: {
             region: string;
             user: {
                 email: string;
             };
         };
-        campaign: {
-            name: string;
-        };
     } & {
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -28,9 +28,9 @@ export declare class SubmissionController {
     })[]>;
     getCreatorSubmissions(): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -41,9 +41,9 @@ export declare class SubmissionController {
     }[]>;
     verifySubmission(id: string, status: 'approved' | 'rejected'): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
@@ -54,9 +54,9 @@ export declare class SubmissionController {
     }>;
     createSubmission(createSubmissionDto: CreateSubmissionDto): Promise<{
         id: string;
+        status: import("@prisma/client").$Enums.SubmissionStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.SubmissionStatus;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;

@@ -8,8 +8,8 @@ export declare class PayoutService {
     constructor(prisma: DatabaseService, kafkaClient: ClientKafka);
     requestPayout(dto: CreatePayoutDto): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.PayoutStatus;
+        createdAt: Date;
         creatorId: string;
         amount: number;
         currency: string;
@@ -18,8 +18,8 @@ export declare class PayoutService {
     handlePayoutConfirmation(event: any): Promise<void>;
     getPayoutHistory(userId: string): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.PayoutStatus;
+        createdAt: Date;
         creatorId: string;
         amount: number;
         currency: string;

@@ -52,7 +52,7 @@ let AiVerificationService = AiVerificationService_1 = class AiVerificationServic
                 rawOutput: { raw: "simulated_payload" },
             },
         });
-        const state = (aiResult.compliance && aiResult.eligibility) ? 'approved' : 'rejected';
+        const state = 'under_review';
         await this.prisma.submission.update({
             where: { id: submission.id },
             data: {
@@ -62,14 +62,7 @@ let AiVerificationService = AiVerificationService_1 = class AiVerificationServic
                 deterministicPassed: true,
             }
         });
-        this.logger.log(`Submission ${submission.id} evaluated. State: ${state}`);
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId: submission.id,
-            state: state,
-            aiConfidence: aiResult.confidence,
-            creatorId: submission.creatorId,
-            campaignId: submission.campaignId,
-        });
+        this.logger.log(`Submission ${submission.id} evaluated. Queued for manual verification.`);
     }
     checkEligibility(submission) {
         if (submission.creator.followers < submission.campaign.minFollowers)
@@ -99,15 +92,10 @@ let AiVerificationService = AiVerificationService_1 = class AiVerificationServic
         };
     }
     async rejectEarly(submissionId, reason) {
-        this.logger.log(`Rejecting Submission ${submissionId} Early: ${reason}`);
+        this.logger.log(`Evaluating Submission ${submissionId} Early: ${reason}. Queuing for manual rejection.`);
         await this.prisma.submission.update({
             where: { id: submissionId },
-            data: { status: 'rejected', deterministicPassed: false }
-        });
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId,
-            state: 'rejected',
-            reason,
+            data: { status: 'under_review', deterministicPassed: false }
         });
     }
 };

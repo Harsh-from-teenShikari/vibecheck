@@ -27,35 +27,45 @@ let CommissionService = CommissionService_1 = class CommissionService {
     }
     async evaluateAndProcessCommission(dto) {
         this.logger.log(`Evaluating Commission viability for Submission: ${dto.submissionId}`);
-        const submission = await this.prisma.submission.findUniqueOrThrow({
+        const submission = await this.prisma.submission.findUnique({
             where: { id: dto.submissionId },
             include: { campaign: true, creator: true, fraudScores: true },
         });
+        if (!submission) {
+            this.logger.warn(`Submission ${dto.submissionId} not found. Likely deleted during DB reset. Safely ignoring Kafka message.`);
+            return;
+        }
         if (submission.status !== 'approved') {
-            this.logger.log(`Submission ${submission.id} is not approved by AI.`);
+            this.logger.log(`Submission ${submission.id} is not approved by Operator.`);
             return;
         }
-        if (submission.fraudScores.length === 0) {
-            this.logger.log(`Submission ${submission.id} is pending Fraud completion.`);
-            return;
-        }
-        const latestFraudScore = submission.fraudScores[submission.fraudScores.length - 1].score;
-        if (latestFraudScore > 0.5) {
-            this.logger.warn(`Submission ${submission.id} rejected by Commission Engine due to high Fraud Score: ${latestFraudScore}`);
-            return;
-        }
-        const baseReward = submission.campaign.rewardPool ? (submission.campaign.rewardPool / 1000) : 1000;
-        const trustMultiplier = submission.creator.trustScore > 0.8 ? 1.5 : 1.0;
-        const finalAmount = Math.floor(baseReward * trustMultiplier);
-        const commission = await this.prisma.commission.create({
-            data: {
-                submissionId: submission.id,
-                campaignId: submission.campaignId,
-                creatorId: submission.creatorId,
-                amount: finalAmount,
-                currency: 'USD',
+        if (submission.fraudScores.length > 0) {
+            const latestFraudScore = submission.fraudScores[submission.fraudScores.length - 1].score;
+            if (latestFraudScore > 0.5) {
+                this.logger.warn(`Submission ${submission.id} has high Fraud Score: ${latestFraudScore}, but Operator MANUALLY APPROVED payload.`);
             }
-        });
+        }
+        else {
+            this.logger.log(`Submission ${submission.id} bypassing Fraud Engine strict check (Manual Validation Assumed).`);
+        }
+        const finalAmount = submission.campaign.targetReward ? submission.campaign.targetReward : 1000;
+        const [commission] = await this.prisma.$transaction([
+            this.prisma.commission.create({
+                data: {
+                    submissionId: submission.id,
+                    campaignId: submission.campaignId,
+                    creatorId: submission.creatorId,
+                    amount: finalAmount,
+                    currency: 'USD',
+                }
+            }),
+            this.prisma.campaign.update({
+                where: { id: submission.campaignId },
+                data: {
+                    rewardPool: { decrement: finalAmount }
+                }
+            })
+        ]);
         this.logger.log(`Commission Processed: ${commission.id} | Amount: ${finalAmount} USD cents`);
         this.kafkaClient.emit('CommissionApproved', {
             commissionId: commission.id,

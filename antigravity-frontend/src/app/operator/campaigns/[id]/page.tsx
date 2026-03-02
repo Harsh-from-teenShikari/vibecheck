@@ -131,6 +131,14 @@ export default function OperatorCampaignDetails() {
                                 <p className="text-sm font-medium text-muted-foreground">Min. Followers Req.</p>
                                 <p className="text-md font-semibold">{campaign.minFollowers?.toLocaleString() || '0'}</p>
                             </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Target Metric (Views)</p>
+                                <p className="text-md font-semibold">{campaign.targetMetric?.toLocaleString() || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Reward on Hit</p>
+                                <p className="text-md font-semibold text-emerald-500">${campaign.targetReward?.toLocaleString() || '0'}</p>
+                            </div>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-muted-foreground mb-1">Required Hashtags</p>

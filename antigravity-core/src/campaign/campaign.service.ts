@@ -23,6 +23,8 @@ export class CampaignService {
                 bannedKeywords: dto.bannedKeywords,
                 requiredAssetId: dto.requiredAssetId,
                 rewardPool: dto.rewardPool,
+                targetMetric: dto.targetMetric,
+                targetReward: dto.targetReward,
                 status: 'draft', // Campaigns always start in draft mode
             },
         });

@@ -42,6 +42,8 @@ export default function OperatorCampaigns() {
         region: 'Global',
         minFollowers: 0,
         targetNiche: '',
+        targetMetric: 0,
+        targetReward: 0,
         rewardPool: 0,
         requiredHashtags: ''
     });
@@ -56,6 +58,8 @@ export default function OperatorCampaigns() {
         region: 'Global',
         minFollowers: 0,
         targetNiche: '',
+        targetMetric: 0,
+        targetReward: 0,
         rewardPool: 0,
         requiredHashtags: ''
     });
@@ -82,6 +86,8 @@ export default function OperatorCampaigns() {
             const payload = {
                 ...newCampaign,
                 minFollowers: Number(newCampaign.minFollowers),
+                targetMetric: Number(newCampaign.targetMetric),
+                targetReward: Number(newCampaign.targetReward),
                 rewardPool: Number(newCampaign.rewardPool),
                 requiredHashtags: newCampaign.requiredHashtags.split(',').map(s => s.trim()).filter(Boolean)
             };
@@ -94,7 +100,7 @@ export default function OperatorCampaigns() {
 
             // Reset form
             setNewCampaign({
-                name: '', type: 'CLIPPING', region: 'Global', minFollowers: 0, targetNiche: '', rewardPool: 0, requiredHashtags: ''
+                name: '', type: 'CLIPPING', region: 'Global', minFollowers: 0, targetNiche: '', targetMetric: 0, targetReward: 0, rewardPool: 0, requiredHashtags: ''
             });
         } catch (error) {
             console.error('Failed to create campaign', error);
@@ -131,6 +137,8 @@ export default function OperatorCampaigns() {
             region: campaign.region || 'Global',
             minFollowers: campaign.minFollowers || 0,
             targetNiche: campaign.targetNiche || '',
+            targetMetric: campaign.targetMetric || 0,
+            targetReward: campaign.targetReward || 0,
             rewardPool: campaign.rewardPool || 0,
             requiredHashtags: Array.isArray(campaign.requiredHashtags)
                 ? campaign.requiredHashtags.join(', ')
@@ -146,6 +154,8 @@ export default function OperatorCampaigns() {
             const payload = {
                 ...editCampaignData,
                 minFollowers: Number(editCampaignData.minFollowers),
+                targetMetric: Number(editCampaignData.targetMetric),
+                targetReward: Number(editCampaignData.targetReward),
                 rewardPool: Number(editCampaignData.rewardPool),
                 requiredHashtags: typeof editCampaignData.requiredHashtags === 'string'
                     ? editCampaignData.requiredHashtags.split(',').map(s => s.trim()).filter(Boolean)
@@ -238,7 +248,34 @@ export default function OperatorCampaigns() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="rewardPool">Reward Pool ($)</Label>
+                                        <Label htmlFor="targetMetric">Target Metric (Views)</Label>
+                                        <Input
+                                            id="targetMetric"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={newCampaign.targetMetric}
+                                            onChange={(e) => setNewCampaign(prev => ({ ...prev, targetMetric: Number(e.target.value) }))}
+                                            placeholder="e.g. 10000"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="targetReward">Reward on Hit ($)</Label>
+                                        <Input
+                                            id="targetReward"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={newCampaign.targetReward}
+                                            onChange={(e) => setNewCampaign(prev => ({ ...prev, targetReward: Number(e.target.value) }))}
+                                            placeholder="e.g. 50"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="rewardPool">Total Funding Pool ($)</Label>
                                         <Input
                                             id="rewardPool"
                                             type="number"
@@ -246,6 +283,7 @@ export default function OperatorCampaigns() {
                                             min="0"
                                             value={newCampaign.rewardPool}
                                             onChange={(e) => setNewCampaign(prev => ({ ...prev, rewardPool: Number(e.target.value) }))}
+                                            placeholder="e.g. 10000"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -336,7 +374,31 @@ export default function OperatorCampaigns() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-rewardPool">Reward Pool ($)</Label>
+                                        <Label htmlFor="edit-targetMetric">Target Metric (Views)</Label>
+                                        <Input
+                                            id="edit-targetMetric"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={editCampaignData.targetMetric}
+                                            onChange={(e) => setEditCampaignData(prev => ({ ...prev, targetMetric: Number(e.target.value) }))}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-targetReward">Reward on Hit ($)</Label>
+                                        <Input
+                                            id="edit-targetReward"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            value={editCampaignData.targetReward}
+                                            onChange={(e) => setEditCampaignData(prev => ({ ...prev, targetReward: Number(e.target.value) }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-rewardPool">Total Funding Pool ($)</Label>
                                         <Input
                                             id="edit-rewardPool"
                                             type="number"

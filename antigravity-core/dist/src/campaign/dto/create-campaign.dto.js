@@ -22,6 +22,8 @@ class CreateCampaignDto {
     bannedKeywords;
     requiredAssetId;
     rewardPool;
+    targetMetric;
+    targetReward;
 }
 exports.CreateCampaignDto = CreateCampaignDto;
 __decorate([
@@ -63,4 +65,14 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateCampaignDto.prototype, "rewardPool", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateCampaignDto.prototype, "targetMetric", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateCampaignDto.prototype, "targetReward", void 0);
 //# sourceMappingURL=create-campaign.dto.js.map

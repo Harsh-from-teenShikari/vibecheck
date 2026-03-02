@@ -32,6 +32,8 @@ let CampaignService = CampaignService_1 = class CampaignService {
                 bannedKeywords: dto.bannedKeywords,
                 requiredAssetId: dto.requiredAssetId,
                 rewardPool: dto.rewardPool,
+                targetMetric: dto.targetMetric,
+                targetReward: dto.targetReward,
                 status: 'draft',
             },
         });

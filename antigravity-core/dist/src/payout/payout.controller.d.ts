@@ -6,8 +6,8 @@ export declare class PayoutController {
     constructor(payoutService: PayoutService);
     initiatePayout(body: CreatePayoutDto): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.PayoutStatus;
+        createdAt: Date;
         creatorId: string;
         amount: number;
         currency: string;
@@ -16,8 +16,8 @@ export declare class PayoutController {
     handlePayoutProcessed(message: any): Promise<void>;
     getPayoutHistory(creatorId: string): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.PayoutStatus;
+        createdAt: Date;
         creatorId: string;
         amount: number;
         currency: string;

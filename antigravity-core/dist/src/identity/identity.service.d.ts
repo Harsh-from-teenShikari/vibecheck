@@ -14,15 +14,15 @@ export declare class IdentityService {
     }>;
     createCreatorProfile(dto: CreateCreatorProfileDto): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
         niche: string;
-        region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getCreatorTrustScore(creatorId: string): Promise<number>;
     getAllUsers(): Promise<({
@@ -32,14 +32,14 @@ export declare class IdentityService {
         };
     } & {
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         userId: string;
         niche: string;
-        region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
 }
