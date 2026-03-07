@@ -35,4 +35,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3001
 
 # Command to run the application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main"]

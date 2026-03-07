@@ -11,13 +11,12 @@ const common_1 = require("@nestjs/common");
 const ai_verification_service_1 = require("./ai-verification.service");
 const ai_verification_controller_1 = require("./ai-verification.controller");
 const database_module_1 = require("../database/database.module");
-const kafka_module_1 = require("../kafka/kafka.module");
 let AiVerificationModule = class AiVerificationModule {
 };
 exports.AiVerificationModule = AiVerificationModule;
 exports.AiVerificationModule = AiVerificationModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, kafka_module_1.KafkaModule],
+        imports: [database_module_1.DatabaseModule],
         controllers: [ai_verification_controller_1.AiVerificationController],
         providers: [ai_verification_service_1.AiVerificationService],
         exports: [ai_verification_service_1.AiVerificationService]

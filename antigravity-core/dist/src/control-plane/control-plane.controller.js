@@ -32,6 +32,9 @@ let ControlPlaneController = ControlPlaneController_1 = class ControlPlaneContro
         this.logger.warn(`Rest Endpoint Triggered: Manual Override by ${body.operatorId}`);
         return await this.controlPlaneService.logOperatorOverride(body.operatorId, body.entityId, body.action, body.justification);
     }
+    async getOperatorDashboardMetrics() {
+        return await this.controlPlaneService.getOperatorDashboardMetrics();
+    }
 };
 exports.ControlPlaneController = ControlPlaneController;
 __decorate([
@@ -53,6 +56,12 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ControlPlaneController.prototype, "triggerManualOverride", null);
+__decorate([
+    (0, common_1.Get)('dashboard'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], ControlPlaneController.prototype, "getOperatorDashboardMetrics", null);
 exports.ControlPlaneController = ControlPlaneController = ControlPlaneController_1 = __decorate([
     (0, common_1.Controller)('control-plane'),
     __metadata("design:paramtypes", [control_plane_service_1.ControlPlaneService])

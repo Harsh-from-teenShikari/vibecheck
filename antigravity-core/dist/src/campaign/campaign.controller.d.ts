@@ -11,9 +11,11 @@ export declare class CampaignController {
         };
     } & {
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -23,14 +25,14 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     getCampaignDetails(id: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -40,14 +42,14 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     createCampaign(createCampaignDto: CreateCampaignDto): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -57,14 +59,14 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateCampaign(id: string, updateCampaignDto: UpdateCampaignDto): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -74,14 +76,14 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     activateCampaign(id: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -91,14 +93,14 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     pauseCampaign(id: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -108,8 +110,6 @@ export declare class CampaignController {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     joinCampaign(campaignId: string, creatorId: string): Promise<{
         id: string;

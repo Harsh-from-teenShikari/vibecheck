@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Logger, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Logger, Get, Param } from '@nestjs/common';
 import { IdentityService } from './identity.service';
 import { CreateUserDto } from './dto/create-identity.dto';
 import { UserRole } from '@prisma/client';
@@ -53,15 +53,20 @@ export class IdentityController {
         this.logger.log(`Received login request for: ${email}`);
 
         // In a real app we'd verify the password hash using IdentityService.
-        // For this frontend/backend scaffold preview, we accept any password 
-        // as long as the email exists in the mock DB or we just mock a success.
+        // For this frontend/backend scaffold preview, we will find the user by email
+        // and return their actual ID so dashboards work dynamically.
+        const user = await this.identityService.getUserByEmail(email);
+
+        if (!user) {
+            throw new HttpException('Invalid email or password.', HttpStatus.UNAUTHORIZED);
+        }
 
         return {
             message: 'Login successful',
             user: {
-                id: 'mock-user-id',
-                email: email,
-                role: 'CREATOR', // Defaulting to CREATOR for local testing if not using real DB check in this mock
+                id: user.id,
+                email: user.email,
+                role: user.role,
             },
             accessToken: 'mock-jwt-token',
         };
@@ -70,5 +75,10 @@ export class IdentityController {
     @Get('users')
     async getAllUsers() {
         return await this.identityService.getAllUsers();
+    }
+
+    @Get('dashboard/:creatorId')
+    async getCreatorDashboardMetrics(@Param('creatorId') creatorId: string) {
+        return await this.identityService.getCreatorDashboardMetrics(creatorId);
     }
 }

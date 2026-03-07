@@ -1,9 +1,37 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, ShieldAlert, BarChart3, TrendingDown, Users } from 'lucide-react';
+import { Activity, ShieldAlert, BarChart3, TrendingDown, Users, Loader2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
 
 export default function OperatorDashboardPage() {
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMetrics = async () => {
+            try {
+                const response = await api.get('/control-plane/dashboard');
+                setMetrics(response.data);
+            } catch (error) {
+                console.error('Failed to fetch operator dashboard metrics', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMetrics();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex-1 flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
     return (
         <div className="flex flex-col gap-6 w-full">
             <div>
@@ -20,7 +48,7 @@ export default function OperatorDashboardPage() {
                         <Activity className="h-4 w-4 text-primary" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">128 req/s</div>
+                        <div className="text-2xl font-bold">{metrics?.networkLoad || 128} req/s</div>
                         <p className="text-xs text-muted-foreground">
                             +14% from last hour
                         </p>
@@ -32,7 +60,7 @@ export default function OperatorDashboardPage() {
                         <ShieldAlert className="h-4 w-4 text-amber-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">42</div>
+                        <div className="text-2xl font-bold">{metrics?.pendingVerifications || 0}</div>
                         <p className="text-xs text-amber-500 mt-1 flex items-center">
                             Requires manual review
                         </p>
@@ -44,7 +72,7 @@ export default function OperatorDashboardPage() {
                         <TrendingDown className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">1.2%</div>
+                        <div className="text-2xl font-bold">{metrics?.fraudDetectionRate ? `${metrics.fraudDetectionRate}%` : '0%'}</div>
                         <p className="text-xs text-emerald-500 mt-1 flex items-center">
                             Target: &lt; 2.0%
                         </p>
@@ -56,9 +84,9 @@ export default function OperatorDashboardPage() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">1,402</div>
+                        <div className="text-2xl font-bold">{metrics?.activeCreators || 0}</div>
                         <p className="text-xs text-muted-foreground">
-                            +82 this week
+                            Live Profiles
                         </p>
                     </CardContent>
                 </Card>
@@ -90,21 +118,23 @@ export default function OperatorDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[
-                                { id: 'SUB-9982', risk: 'High', reason: 'Bot Activity Pattern' },
-                                { id: 'SUB-9811', risk: 'Medium', reason: 'Low AI Confidence' },
-                                { id: 'SUB-9742', risk: 'High', reason: 'Banned Keyword Detected' },
-                            ].map((item) => (
-                                <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border bg-card/50">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium">{item.id}</span>
-                                        <span className="text-xs text-muted-foreground">{item.reason}</span>
+                            {metrics?.escalatedSubmissions?.length > 0 ? (
+                                metrics.escalatedSubmissions.map((item: any) => (
+                                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border bg-card/50">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-muted-foreground">ID: {item.id}</span>
+                                            <span className="text-sm font-semibold">{item.reason}</span>
+                                        </div>
+                                        <Badge variant={item.risk === 'High' ? 'destructive' : 'secondary'} className={item.risk === 'Medium' ? 'bg-amber-500/20 text-amber-500' : ''}>
+                                            {item.risk} Risk
+                                        </Badge>
                                     </div>
-                                    <Badge variant={item.risk === 'High' ? 'destructive' : 'secondary'} className={item.risk === 'Medium' ? 'bg-amber-500/20 text-amber-500' : ''}>
-                                        {item.risk} Risk
-                                    </Badge>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-muted-foreground text-sm">
+                                    No escalated submissions currently.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -126,18 +156,25 @@ export default function OperatorDashboardPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {[
-                                { time: '10 mins ago', actor: 'System Worker', action: 'Process Payout Batch', entity: 'Payout' },
-                                { time: '1 hr ago', actor: 'Admin O-221', action: 'Updated Campaign Reward', entity: 'Campaign #CPN-890' },
-                                { time: '2 hrs ago', actor: 'AI Verifier', action: 'Flagged Submission', entity: 'Submission #SUB-9982' },
-                            ].map((log, i) => (
-                                <TableRow key={i}>
-                                    <TableCell className="text-muted-foreground">{log.time}</TableCell>
-                                    <TableCell className="font-medium">{log.actor}</TableCell>
-                                    <TableCell>{log.action}</TableCell>
-                                    <TableCell>{log.entity}</TableCell>
+                            {metrics?.recentAuditLogs?.length > 0 ? (
+                                metrics.recentAuditLogs.map((log: any, i: number) => (
+                                    <TableRow key={i}>
+                                        <TableCell className="text-muted-foreground">{new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
+                                        <TableCell className="font-medium flex items-center gap-2">
+                                            {log.actor}
+                                            {log.actor.includes('Admin') && <Badge variant="outline" className="text-[10px] h-4 leading-none">ROOT</Badge>}
+                                        </TableCell>
+                                        <TableCell>{log.action}</TableCell>
+                                        <TableCell className="font-mono text-xs">{log.entity}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                                        No recent audit logs available.
+                                    </TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>

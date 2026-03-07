@@ -8,22 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var CommissionService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommissionService = void 0;
 const common_1 = require("@nestjs/common");
 const database_service_1 = require("../database/database.service");
-const microservices_1 = require("@nestjs/microservices");
+const ledger_service_1 = require("../ledger/ledger.service");
 let CommissionService = CommissionService_1 = class CommissionService {
     prisma;
-    kafkaClient;
+    ledgerService;
     logger = new common_1.Logger(CommissionService_1.name);
-    constructor(prisma, kafkaClient) {
+    constructor(prisma, ledgerService) {
         this.prisma = prisma;
-        this.kafkaClient = kafkaClient;
+        this.ledgerService = ledgerService;
     }
     async evaluateAndProcessCommission(dto) {
         this.logger.log(`Evaluating Commission viability for Submission: ${dto.submissionId}`);
@@ -67,21 +64,18 @@ let CommissionService = CommissionService_1 = class CommissionService {
             })
         ]);
         this.logger.log(`Commission Processed: ${commission.id} | Amount: ${finalAmount} USD cents`);
-        this.kafkaClient.emit('CommissionApproved', {
+        await this.ledgerService.recordCommission({
             commissionId: commission.id,
             creatorId: commission.creatorId,
             campaignId: commission.campaignId,
             amount: commission.amount,
-            currency: commission.currency,
-            timestamp: new Date().toISOString()
         });
     }
 };
 exports.CommissionService = CommissionService;
 exports.CommissionService = CommissionService = CommissionService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)('KAFKA_SERVICE')),
     __metadata("design:paramtypes", [database_service_1.DatabaseService,
-        microservices_1.ClientKafka])
+        ledger_service_1.LedgerService])
 ], CommissionService);
 //# sourceMappingURL=commission.service.js.map

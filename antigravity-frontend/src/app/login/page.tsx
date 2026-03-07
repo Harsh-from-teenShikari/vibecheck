@@ -33,6 +33,7 @@ export default function LoginPage() {
 
             Cookies.set('auth_token', accessToken, { secure: true, sameSite: 'strict' });
             Cookies.set('user_role', user.role, { secure: true, sameSite: 'strict' });
+            Cookies.set('user_id', user.id, { secure: true, sameSite: 'strict' });
 
             // Redirect based on role
             if (user.role === 'OPERATOR') {

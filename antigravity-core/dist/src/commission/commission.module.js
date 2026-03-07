@@ -11,13 +11,13 @@ const common_1 = require("@nestjs/common");
 const commission_service_1 = require("./commission.service");
 const commission_controller_1 = require("./commission.controller");
 const database_module_1 = require("../database/database.module");
-const kafka_module_1 = require("../kafka/kafka.module");
+const ledger_module_1 = require("../ledger/ledger.module");
 let CommissionModule = class CommissionModule {
 };
 exports.CommissionModule = CommissionModule;
 exports.CommissionModule = CommissionModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, kafka_module_1.KafkaModule],
+        imports: [database_module_1.DatabaseModule, ledger_module_1.LedgerModule],
         controllers: [commission_controller_1.CommissionController],
         providers: [commission_service_1.CommissionService],
         exports: [commission_service_1.CommissionService]

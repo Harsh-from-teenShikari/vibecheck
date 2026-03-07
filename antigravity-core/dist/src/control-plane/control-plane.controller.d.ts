@@ -12,13 +12,13 @@ export declare class ControlPlaneController {
     }[]>;
     getAuditLogs(): Promise<{
         id: string;
-        createdAt: Date;
         actorId: string;
         action: string;
         entityType: string;
         entityId: string;
         beforeState: import("@prisma/client/runtime/client").JsonValue | null;
         afterState: import("@prisma/client/runtime/client").JsonValue | null;
+        createdAt: Date;
     }[]>;
     triggerManualOverride(body: {
         operatorId: string;
@@ -27,12 +27,29 @@ export declare class ControlPlaneController {
         justification: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
         actorId: string;
         action: string;
         entityType: string;
         entityId: string;
         beforeState: import("@prisma/client/runtime/client").JsonValue | null;
         afterState: import("@prisma/client/runtime/client").JsonValue | null;
+        createdAt: Date;
+    }>;
+    getOperatorDashboardMetrics(): Promise<{
+        networkLoad: number;
+        pendingVerifications: number;
+        fraudDetectionRate: number;
+        activeCreators: number;
+        escalatedSubmissions: {
+            id: string;
+            risk: string;
+            reason: string;
+        }[];
+        recentAuditLogs: {
+            time: string;
+            actor: string;
+            action: string;
+            entity: string;
+        }[];
     }>;
 }

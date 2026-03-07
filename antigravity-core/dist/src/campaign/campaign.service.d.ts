@@ -7,9 +7,11 @@ export declare class CampaignService {
     constructor(prisma: DatabaseService);
     createCampaign(dto: CreateCampaignDto): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -19,14 +21,14 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     activateCampaign(campaignId: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -36,14 +38,14 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateCampaign(campaignId: string, dto: UpdateCampaignDto): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -53,14 +55,14 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     pauseCampaign(campaignId: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -70,14 +72,14 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getCampaignDetails(campaignId: string): Promise<{
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -87,8 +89,6 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getAllCampaigns(): Promise<({
         _count: {
@@ -97,9 +97,11 @@ export declare class CampaignService {
         };
     } & {
         id: string;
+        region: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         type: import("@prisma/client").$Enums.CampaignType;
-        region: string;
         minFollowers: number;
         targetNiche: string;
         requiredHashtags: import("@prisma/client/runtime/client").JsonValue | null;
@@ -109,8 +111,6 @@ export declare class CampaignService {
         targetMetric: number | null;
         targetReward: number | null;
         status: import("@prisma/client").$Enums.CampaignStatus;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     joinCampaign(campaignId: string, creatorId: string): Promise<{
         id: string;

@@ -11,13 +11,14 @@ const common_1 = require("@nestjs/common");
 const submission_service_1 = require("./submission.service");
 const submission_controller_1 = require("./submission.controller");
 const database_module_1 = require("../database/database.module");
-const kafka_module_1 = require("../kafka/kafka.module");
+const ai_verification_module_1 = require("../ai-verification/ai-verification.module");
+const commission_module_1 = require("../commission/commission.module");
 let SubmissionModule = class SubmissionModule {
 };
 exports.SubmissionModule = SubmissionModule;
 exports.SubmissionModule = SubmissionModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, kafka_module_1.KafkaModule],
+        imports: [database_module_1.DatabaseModule, ai_verification_module_1.AiVerificationModule, commission_module_1.CommissionModule],
         controllers: [submission_controller_1.SubmissionController],
         providers: [submission_service_1.SubmissionService],
         exports: [submission_service_1.SubmissionService]

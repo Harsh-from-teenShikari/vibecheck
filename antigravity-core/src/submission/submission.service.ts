@@ -1,7 +1,8 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
 import { DatabaseService } from '../database/database.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
+import { AiVerificationService } from '../ai-verification/ai-verification.service';
+import { CommissionService } from '../commission/commission.service';
 
 @Injectable()
 export class SubmissionService {
@@ -9,22 +10,29 @@ export class SubmissionService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+        private readonly aiVerificationService: AiVerificationService,
+        private readonly commissionService: CommissionService,
     ) { }
 
-    async onModuleInit() {
-        this.kafkaClient.subscribeToResponseOf('SubmissionCreated');
-        await this.kafkaClient.connect();
-        this.logger.log('SubmissionService Kafka Client Connected');
-    }
-
     /**
-     * Doctrine 2: Event-Driven Doctrine
-     * Saves the submission to the local datastore and immediately fires the Event to the broker
-     * for Fraud & AI Verification Services to pick up.
+     * Synchronous Verification Doctrine
+     * Saves the submission to the local datastore and immediately evaluates it.
      */
     async createSubmission(dto: CreateSubmissionDto) {
         this.logger.log(`Ingesting Submission for Campaign: ${dto.campaignId} by Creator: ${dto.creatorId}`);
+
+        // Verify the campaign is not depleted
+        const campaign = await this.prisma.campaign.findUnique({
+            where: { id: dto.campaignId }
+        });
+
+        if (!campaign) {
+            throw new Error('Campaign not found');
+        }
+
+        if (campaign.rewardPool !== null && campaign.rewardPool <= 0) {
+            throw new Error('This campaign has exhausted its reward pool. No further submissions are accepted.');
+        }
 
         // Persist to DB (Status defaults to pending)
         const submission = await this.prisma.submission.create({
@@ -35,23 +43,26 @@ export class SubmissionService {
             },
         });
 
-        this.logger.log(`Submission ${submission.id} persisted. Emitting SubmissionCreated event.`);
+        this.logger.log(`Submission ${submission.id} persisted. Running AI Verification.`);
 
-        // Emit to Kafka for AI Verification & Fraud Services
-        this.kafkaClient.emit('SubmissionCreated', {
+        // Call AI Verification synchronously
+        const eventPayload = {
             submissionId: submission.id,
             campaignId: submission.campaignId,
             creatorId: submission.creatorId,
             contentData: submission.contentData,
             timestamp: new Date().toISOString()
+        };
+
+        // Execute without awaiting to mimic event-driven async behavior slightly and prevent hanging the HTTP req
+        this.aiVerificationService.evaluateSubmission(eventPayload).catch(e => {
+            this.logger.error(`AI Verification failed for ${submission.id}:`, e);
         });
 
         return submission;
     }
 
     async getCreatorSubmissions() {
-        // Mock method to retrieve submissions for a hardcoded user ID.
-        // In reality, this would extract the user ID from the JWT request payload.
         return await this.prisma.submission.findMany({
             orderBy: { createdAt: 'desc' }
         });
@@ -80,13 +91,10 @@ export class SubmissionService {
             data: { status }
         });
 
-        // Emit VerificationCompleted so Commission Service calculates payouts
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId: id,
-            state: status,
-            creatorId: submission.creatorId,
-            campaignId: submission.campaignId,
-        });
+        // Trigger Commission Engine synchronously
+        if (status === 'approved') {
+            await this.commissionService.evaluateAndProcessCommission({ submissionId: id });
+        }
 
         return submission;
     }

@@ -8,16 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FraudModule = void 0;
 const common_1 = require("@nestjs/common");
+const database_module_1 = require("../database/database.module");
+const notification_module_1 = require("../notification/notification.module");
 const fraud_service_1 = require("./fraud.service");
 const fraud_controller_1 = require("./fraud.controller");
-const database_module_1 = require("../database/database.module");
-const kafka_module_1 = require("../kafka/kafka.module");
 let FraudModule = class FraudModule {
 };
 exports.FraudModule = FraudModule;
 exports.FraudModule = FraudModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, kafka_module_1.KafkaModule],
+        imports: [database_module_1.DatabaseModule, notification_module_1.NotificationModule],
         controllers: [fraud_controller_1.FraudController],
         providers: [fraud_service_1.FraudService],
         exports: [fraud_service_1.FraudService]

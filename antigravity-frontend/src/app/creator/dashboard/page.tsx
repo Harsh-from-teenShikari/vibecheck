@@ -1,10 +1,45 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Activity, CreditCard, Star, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Activity, CreditCard, Star, TrendingUp, CheckCircle2, Loader2, PlayCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import Cookies from 'js-cookie';
 
 export default function CreatorDashboardPage() {
+    const [metrics, setMetrics] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchMetrics = async () => {
+            const userId = Cookies.get('user_id');
+            if (!userId) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await api.get(`/identity/dashboard/${userId}`);
+                setMetrics(response.data);
+            } catch (error) {
+                console.error('Failed to fetch creator dashboard metrics', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMetrics();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex-1 flex items-center justify-center p-8 w-full">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
     return (
         <div className="flex flex-col gap-6 w-full">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -27,9 +62,9 @@ export default function CreatorDashboardPage() {
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">$1,245.00</div>
+                        <div className="text-2xl font-bold">${(metrics?.availableBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                         <p className="text-xs text-muted-foreground">
-                            +20.1% from last month
+                            Ready for payout
                         </p>
                     </CardContent>
                 </Card>
@@ -39,9 +74,9 @@ export default function CreatorDashboardPage() {
                         <Activity className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">12</div>
+                        <div className="text-2xl font-bold">{metrics?.pendingApprovals || 0}</div>
                         <p className="text-xs text-muted-foreground">
-                            4 under AI review
+                            Under AI or Manual review
                         </p>
                     </CardContent>
                 </Card>
@@ -52,11 +87,13 @@ export default function CreatorDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-baseline gap-2">
-                            <div className="text-2xl font-bold">0.92</div>
-                            <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/20">Excellent</Badge>
+                            <div className="text-2xl font-bold">{(metrics?.trustScore || 0).toFixed(2)}</div>
+                            <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/20">
+                                {metrics?.trustScore && metrics.trustScore > 0.8 ? 'Excellent' : 'Good'}
+                            </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Top 5% of network
+                            Network Rating
                         </p>
                     </CardContent>
                 </Card>
@@ -66,9 +103,9 @@ export default function CreatorDashboardPage() {
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">4.2%</div>
+                        <div className="text-2xl font-bold">{metrics?.conversionRate ? `${metrics.conversionRate}%` : '0%'}</div>
                         <p className="text-xs text-muted-foreground">
-                            +1.2% this week
+                            Approval Ratio
                         </p>
                     </CardContent>
                 </Card>
@@ -84,23 +121,35 @@ export default function CreatorDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-8">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="flex items-center">
-                                    <span className="relative flex h-2 w-2 mr-4">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                                    </span>
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            Submission Approved
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Campaign #CPN-{890 + i} • AI Verification Passed
-                                        </p>
+                            {metrics?.recentActivity?.length > 0 ? (
+                                metrics.recentActivity.map((activity: any) => (
+                                    <div key={activity.id} className="flex items-center">
+                                        <span className="relative flex h-2 w-2 mr-4">
+                                            {activity.type.includes('Approved') ? (
+                                                <>
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                                </>
+                                            ) : (
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-muted-foreground"></span>
+                                            )}
+                                        </span>
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium leading-none">
+                                                {activity.type}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {activity.details} • {new Date(activity.time).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div className="ml-auto font-medium text-primary">{activity.amount}</div>
                                     </div>
-                                    <div className="ml-auto font-medium text-primary">+$45.00</div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-muted-foreground text-sm">
+                                    No recent activity.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -114,30 +163,34 @@ export default function CreatorDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 rounded-xl border bg-card/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                            {metrics?.activeCampaigns?.length > 0 ? (
+                                metrics.activeCampaigns.map((campaign: any) => (
+                                    <div key={campaign.id} className="flex items-center justify-between p-4 rounded-xl border bg-card/50">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                                {campaign.type === 'CLIPPING' ?
+                                                    <PlayCircle className="h-5 w-5 text-primary" /> :
+                                                    <CheckCircle2 className="h-5 w-5 text-blue-500" />
+                                                }
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-semibold">{campaign.name}</h4>
+                                                <p className="text-xs text-muted-foreground">{campaign.type} Campaign • ${campaign.rewardPool} Pool</p>
+                                            </div>
+                                        </div>
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/creator/campaigns/${campaign.id}`}>View</Link>
+                                        </Button>
                                     </div>
-                                    <div>
-                                        <h4 className="text-sm font-semibold">Nike Run Club</h4>
-                                        <p className="text-xs text-muted-foreground">Clipping Campaign</p>
-                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-muted-foreground text-sm flex flex-col items-center gap-2">
+                                    <p>You haven't joined any campaigns yet.</p>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/creator/campaigns">Browse Campaigns</Link>
+                                    </Button>
                                 </div>
-                                <Button variant="outline" size="sm">Submit</Button>
-                            </div>
-                            <div className="flex items-center justify-between p-4 rounded-xl border bg-card/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                        <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-semibold">WebFlow Partner</h4>
-                                        <p className="text-xs text-muted-foreground">Affiliate Campaign</p>
-                                    </div>
-                                </div>
-                                <Button variant="outline" size="sm">Stats</Button>
-                            </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

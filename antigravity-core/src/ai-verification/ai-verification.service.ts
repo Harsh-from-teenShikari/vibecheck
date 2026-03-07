@@ -1,7 +1,6 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { AiVerificationResultDto } from './dto/ai-verification.dto';
-import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
 export class AiVerificationService {
@@ -9,7 +8,6 @@ export class AiVerificationService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
     ) { }
 
     /**
