@@ -57,18 +57,25 @@ let IdentityController = IdentityController_1 = class IdentityController {
     async login(body) {
         const { email, password } = body;
         this.logger.log(`Received login request for: ${email}`);
+        const user = await this.identityService.getUserByEmail(email);
+        if (!user) {
+            throw new common_1.HttpException('Invalid email or password.', common_1.HttpStatus.UNAUTHORIZED);
+        }
         return {
             message: 'Login successful',
             user: {
-                id: 'mock-user-id',
-                email: email,
-                role: 'CREATOR',
+                id: user.id,
+                email: user.email,
+                role: user.role,
             },
             accessToken: 'mock-jwt-token',
         };
     }
     async getAllUsers() {
         return await this.identityService.getAllUsers();
+    }
+    async getCreatorDashboardMetrics(creatorId) {
+        return await this.identityService.getCreatorDashboardMetrics(creatorId);
     }
 };
 exports.IdentityController = IdentityController;
@@ -92,6 +99,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], IdentityController.prototype, "getAllUsers", null);
+__decorate([
+    (0, common_1.Get)('dashboard/:creatorId'),
+    __param(0, (0, common_1.Param)('creatorId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], IdentityController.prototype, "getCreatorDashboardMetrics", null);
 exports.IdentityController = IdentityController = IdentityController_1 = __decorate([
     (0, common_1.Controller)('identity'),
     __metadata("design:paramtypes", [identity_service_1.IdentityService])

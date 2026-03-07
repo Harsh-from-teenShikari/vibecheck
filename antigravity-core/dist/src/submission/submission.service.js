@@ -8,30 +8,34 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var SubmissionService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubmissionService = void 0;
 const common_1 = require("@nestjs/common");
-const microservices_1 = require("@nestjs/microservices");
 const database_service_1 = require("../database/database.service");
+const ai_verification_service_1 = require("../ai-verification/ai-verification.service");
+const commission_service_1 = require("../commission/commission.service");
 let SubmissionService = SubmissionService_1 = class SubmissionService {
     prisma;
-    kafkaClient;
+    aiVerificationService;
+    commissionService;
     logger = new common_1.Logger(SubmissionService_1.name);
-    constructor(prisma, kafkaClient) {
+    constructor(prisma, aiVerificationService, commissionService) {
         this.prisma = prisma;
-        this.kafkaClient = kafkaClient;
-    }
-    async onModuleInit() {
-        this.kafkaClient.subscribeToResponseOf('SubmissionCreated');
-        await this.kafkaClient.connect();
-        this.logger.log('SubmissionService Kafka Client Connected');
+        this.aiVerificationService = aiVerificationService;
+        this.commissionService = commissionService;
     }
     async createSubmission(dto) {
         this.logger.log(`Ingesting Submission for Campaign: ${dto.campaignId} by Creator: ${dto.creatorId}`);
+        const campaign = await this.prisma.campaign.findUnique({
+            where: { id: dto.campaignId }
+        });
+        if (!campaign) {
+            throw new Error('Campaign not found');
+        }
+        if (campaign.rewardPool !== null && campaign.rewardPool <= 0) {
+            throw new Error('This campaign has exhausted its reward pool. No further submissions are accepted.');
+        }
         const submission = await this.prisma.submission.create({
             data: {
                 campaignId: dto.campaignId,
@@ -39,13 +43,16 @@ let SubmissionService = SubmissionService_1 = class SubmissionService {
                 contentData: { url: dto.contentUrl },
             },
         });
-        this.logger.log(`Submission ${submission.id} persisted. Emitting SubmissionCreated event.`);
-        this.kafkaClient.emit('SubmissionCreated', {
+        this.logger.log(`Submission ${submission.id} persisted. Running AI Verification.`);
+        const eventPayload = {
             submissionId: submission.id,
             campaignId: submission.campaignId,
             creatorId: submission.creatorId,
             contentData: submission.contentData,
             timestamp: new Date().toISOString()
+        };
+        this.aiVerificationService.evaluateSubmission(eventPayload).catch(e => {
+            this.logger.error(`AI Verification failed for ${submission.id}:`, e);
         });
         return submission;
     }
@@ -75,20 +82,17 @@ let SubmissionService = SubmissionService_1 = class SubmissionService {
             where: { id },
             data: { status }
         });
-        this.kafkaClient.emit('VerificationCompleted', {
-            submissionId: id,
-            state: status,
-            creatorId: submission.creatorId,
-            campaignId: submission.campaignId,
-        });
+        if (status === 'approved') {
+            await this.commissionService.evaluateAndProcessCommission({ submissionId: id });
+        }
         return submission;
     }
 };
 exports.SubmissionService = SubmissionService;
 exports.SubmissionService = SubmissionService = SubmissionService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)('KAFKA_SERVICE')),
     __metadata("design:paramtypes", [database_service_1.DatabaseService,
-        microservices_1.ClientKafka])
+        ai_verification_service_1.AiVerificationService,
+        commission_service_1.CommissionService])
 ], SubmissionService);
 //# sourceMappingURL=submission.service.js.map

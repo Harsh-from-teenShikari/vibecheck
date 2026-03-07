@@ -1,15 +1,17 @@
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
+import { LedgerService } from '../ledger/ledger.service';
+import { NotificationService } from '../notification/notification.service';
 import { CreatePayoutDto } from './dto/payout.dto';
 export declare class PayoutService {
     private prisma;
-    private readonly kafkaClient;
+    private readonly ledgerService;
+    private readonly notificationService;
     private readonly logger;
-    constructor(prisma: DatabaseService, kafkaClient: ClientKafka);
+    constructor(prisma: DatabaseService, ledgerService: LedgerService, notificationService: NotificationService);
     requestPayout(dto: CreatePayoutDto): Promise<{
         id: string;
-        status: import("@prisma/client").$Enums.PayoutStatus;
         createdAt: Date;
+        status: import("@prisma/client").$Enums.PayoutStatus;
         creatorId: string;
         amount: number;
         currency: string;
@@ -18,8 +20,8 @@ export declare class PayoutService {
     handlePayoutConfirmation(event: any): Promise<void>;
     getPayoutHistory(userId: string): Promise<{
         id: string;
-        status: import("@prisma/client").$Enums.PayoutStatus;
         createdAt: Date;
+        status: import("@prisma/client").$Enums.PayoutStatus;
         creatorId: string;
         amount: number;
         currency: string;

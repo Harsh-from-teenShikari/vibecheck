@@ -1,6 +1,7 @@
-import { Injectable, Logger, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
+import { LedgerService } from '../ledger/ledger.service';
+import { NotificationService } from '../notification/notification.service';
 import { CreatePayoutDto } from './dto/payout.dto';
 
 @Injectable()
@@ -9,7 +10,8 @@ export class PayoutService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+        private readonly ledgerService: LedgerService,
+        private readonly notificationService: NotificationService,
     ) { }
 
     /**
@@ -43,15 +45,28 @@ export class PayoutService {
             }
         });
 
-        this.logger.log(`Payout Record Stored: ${payout.id}. Emitting PayoutRequested to Ledger.`);
+        this.logger.log(`Payout Record Stored: ${payout.id}. Requesting physical payout from Ledger.`);
 
         // Tell Ledger to move the physical money based on its immutability logic
-        this.kafkaClient.emit('PayoutRequested', {
+        await this.ledgerService.processPayout({
             payoutId: payout.id,
             creatorId: payout.creatorId,
             amount: payout.amount,
-            timestamp: new Date().toISOString()
         });
+
+        // Normally, handlePayoutConfirmation would be called by a webhook from a payment provider like Stripe
+        // But for our simplified synchronous architecture we can directly update it here.
+        await this.handlePayoutConfirmation({
+            payoutId: payout.id,
+            status: 'completed',
+        });
+
+        // Doctrine 2: Synchronous Notification Dispatch
+        await this.notificationService.notifyCreator(
+            payout.creatorId,
+            'Your Payout is Complete',
+            `We have successfully processed a payout of ${payout.amount} USD cents.`
+        );
 
         return payout;
     }

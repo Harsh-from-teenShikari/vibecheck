@@ -8,22 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var LedgerService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LedgerService = void 0;
 const common_1 = require("@nestjs/common");
 const database_service_1 = require("../database/database.service");
-const microservices_1 = require("@nestjs/microservices");
 let LedgerService = LedgerService_1 = class LedgerService {
     prisma;
-    kafkaClient;
     logger = new common_1.Logger(LedgerService_1.name);
-    constructor(prisma, kafkaClient) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.kafkaClient = kafkaClient;
     }
     async recordCommission(dto) {
         this.logger.log(`Recording Commission Event: ${dto.commissionId}`);
@@ -51,13 +45,6 @@ let LedgerService = LedgerService_1 = class LedgerService {
                 ],
             });
             this.logger.log(`Successfully persisted ${entries.count} Ledger Entries for Commission ${dto.commissionId}`);
-            this.kafkaClient.emit('LedgerEntryCreated', {
-                commissionId: dto.commissionId,
-                creatorId: dto.creatorId,
-                amount: dto.amount,
-                type: 'COMMISSION_RECORDED',
-                timestamp: new Date().toISOString()
-            });
             return entries;
         });
     }
@@ -113,13 +100,6 @@ let LedgerService = LedgerService_1 = class LedgerService {
                     },
                 ],
             });
-            this.kafkaClient.emit('PayoutProcessed', {
-                payoutId: dto.payoutId,
-                creatorId: dto.creatorId,
-                amount: dto.amount,
-                status: 'completed',
-                timestamp: new Date().toISOString()
-            });
             return entries;
         });
     }
@@ -127,8 +107,6 @@ let LedgerService = LedgerService_1 = class LedgerService {
 exports.LedgerService = LedgerService;
 exports.LedgerService = LedgerService = LedgerService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)('KAFKA_SERVICE')),
-    __metadata("design:paramtypes", [database_service_1.DatabaseService,
-        microservices_1.ClientKafka])
+    __metadata("design:paramtypes", [database_service_1.DatabaseService])
 ], LedgerService);
 //# sourceMappingURL=ledger.service.js.map

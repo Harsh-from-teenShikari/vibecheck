@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database/database.module';
-import { KafkaModule } from '../kafka/kafka.module';
+import { LedgerModule } from '../ledger/ledger.module';
+import { NotificationModule } from '../notification/notification.module';
 import { PayoutService } from './payout.service';
 import { PayoutController } from './payout.controller';
 
 @Module({
-  imports: [DatabaseModule, KafkaModule],
+  imports: [DatabaseModule, LedgerModule, NotificationModule],
   controllers: [PayoutController],
   providers: [PayoutService],
   exports: [PayoutService]

@@ -27,8 +27,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
     env_file:
       - .env
     deploy:
@@ -77,65 +75,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ClickHouse (Analytics, ML Batch Scoring, Control Plane)
-  clickhouse:
-    image: clickhouse/clickhouse-server:23-alpine
-    container_name: antigravity_clickhouse
-    ports:
-      - '8123:8123'
-      - '9000:9000'
-    environment:
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: clickhouse_password
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    healthcheck:
-      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8123/ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Kafka setup (Zookeeper + Kafka Broker) 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
-    container_name: antigravity_zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    ports:
-      - '2181:2181'
-
-  kafka:
-    image: confluentinc/cp-kafka:7.4.0
-    container_name: antigravity_kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - '9092:9092'
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   postgres_data:
   redis_data:
-  clickhouse_data:

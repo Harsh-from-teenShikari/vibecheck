@@ -8,22 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var AiVerificationService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiVerificationService = void 0;
 const common_1 = require("@nestjs/common");
 const database_service_1 = require("../database/database.service");
-const microservices_1 = require("@nestjs/microservices");
 let AiVerificationService = AiVerificationService_1 = class AiVerificationService {
     prisma;
-    kafkaClient;
     logger = new common_1.Logger(AiVerificationService_1.name);
-    constructor(prisma, kafkaClient) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.kafkaClient = kafkaClient;
     }
     async evaluateSubmission(submissionEvent) {
         this.logger.log(`Evaluating Submission: ${submissionEvent.submissionId}`);
@@ -102,8 +96,6 @@ let AiVerificationService = AiVerificationService_1 = class AiVerificationServic
 exports.AiVerificationService = AiVerificationService;
 exports.AiVerificationService = AiVerificationService = AiVerificationService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)('KAFKA_SERVICE')),
-    __metadata("design:paramtypes", [database_service_1.DatabaseService,
-        microservices_1.ClientKafka])
+    __metadata("design:paramtypes", [database_service_1.DatabaseService])
 ], AiVerificationService);
 //# sourceMappingURL=ai-verification.service.js.map

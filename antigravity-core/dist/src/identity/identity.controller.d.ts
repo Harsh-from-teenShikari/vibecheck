@@ -17,8 +17,8 @@ export declare class IdentityController {
         message: string;
         user: {
             id: string;
-            email: any;
-            role: string;
+            email: string;
+            role: import("@prisma/client").$Enums.UserRole;
         };
         accessToken: string;
     }>;
@@ -29,14 +29,33 @@ export declare class IdentityController {
         };
     } & {
         id: string;
-        region: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         niche: string;
+        region: string;
         followers: number;
         trustScore: number;
         kycStatus: import("@prisma/client").$Enums.KycStatus;
         taxProfileId: string | null;
+        userId: string;
     })[]>;
+    getCreatorDashboardMetrics(creatorId: string): Promise<{
+        availableBalance: number;
+        pendingApprovals: number;
+        trustScore: number;
+        conversionRate: number;
+        recentActivity: {
+            id: string;
+            type: string;
+            details: string;
+            amount: string;
+            time: string;
+        }[];
+        activeCampaigns: {
+            id: string;
+            name: string;
+            type: import("@prisma/client").$Enums.CampaignType;
+            rewardPool: number | null;
+        }[];
+    }>;
 }

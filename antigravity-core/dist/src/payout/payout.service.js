@@ -8,22 +8,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 var PayoutService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PayoutService = void 0;
 const common_1 = require("@nestjs/common");
 const database_service_1 = require("../database/database.service");
-const microservices_1 = require("@nestjs/microservices");
+const ledger_service_1 = require("../ledger/ledger.service");
+const notification_service_1 = require("../notification/notification.service");
 let PayoutService = PayoutService_1 = class PayoutService {
     prisma;
-    kafkaClient;
+    ledgerService;
+    notificationService;
     logger = new common_1.Logger(PayoutService_1.name);
-    constructor(prisma, kafkaClient) {
+    constructor(prisma, ledgerService, notificationService) {
         this.prisma = prisma;
-        this.kafkaClient = kafkaClient;
+        this.ledgerService = ledgerService;
+        this.notificationService = notificationService;
     }
     async requestPayout(dto) {
         this.logger.log(`Initiating Payout Request for Creator: ${dto.creatorId}`);
@@ -45,13 +45,17 @@ let PayoutService = PayoutService_1 = class PayoutService {
                 status: 'pending',
             }
         });
-        this.logger.log(`Payout Record Stored: ${payout.id}. Emitting PayoutRequested to Ledger.`);
-        this.kafkaClient.emit('PayoutRequested', {
+        this.logger.log(`Payout Record Stored: ${payout.id}. Requesting physical payout from Ledger.`);
+        await this.ledgerService.processPayout({
             payoutId: payout.id,
             creatorId: payout.creatorId,
             amount: payout.amount,
-            timestamp: new Date().toISOString()
         });
+        await this.handlePayoutConfirmation({
+            payoutId: payout.id,
+            status: 'completed',
+        });
+        await this.notificationService.notifyCreator(payout.creatorId, 'Your Payout is Complete', `We have successfully processed a payout of ${payout.amount} USD cents.`);
         return payout;
     }
     async handlePayoutConfirmation(event) {
@@ -79,8 +83,8 @@ let PayoutService = PayoutService_1 = class PayoutService {
 exports.PayoutService = PayoutService;
 exports.PayoutService = PayoutService = PayoutService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, common_1.Inject)('KAFKA_SERVICE')),
     __metadata("design:paramtypes", [database_service_1.DatabaseService,
-        microservices_1.ClientKafka])
+        ledger_service_1.LedgerService,
+        notification_service_1.NotificationService])
 ], PayoutService);
 //# sourceMappingURL=payout.service.js.map

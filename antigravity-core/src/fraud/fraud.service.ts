@@ -1,6 +1,6 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
+import { NotificationService } from '../notification/notification.service';
 import Redis from 'ioredis';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class FraudService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+        private readonly notificationService: NotificationService,
     ) {
         this.redisClient = new Redis(process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379, process.env.REDIS_HOST || 'localhost');
     }
@@ -68,12 +68,14 @@ export class FraudService {
 
         this.logger.log(`Fraud Score for ${event.submissionId} is ${fraudScore}`);
 
-        // 5. Emit Event for Commission Engine
-        this.kafkaClient.emit('FraudScoreCalculated', {
-            submissionId: event.submissionId,
-            creatorId: event.creatorId,
-            campaignId: event.campaignId,
-            fraudScore,
-        });
+        if (fraudScore > 0.8) {
+            await this.notificationService.notifyOperatorAlert(
+                'High Fraud Score Detected',
+                `Creator ${event.creatorId} scored ${fraudScore} on Submission ${event.submissionId}.`
+            );
+        }
+
+        // The next steps for Commission will be handled synchronously in the new architecture
+        return fraudScore;
     }
 }

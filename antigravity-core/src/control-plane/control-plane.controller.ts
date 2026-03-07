@@ -22,4 +22,9 @@ export class ControlPlaneController {
         this.logger.warn(`Rest Endpoint Triggered: Manual Override by ${body.operatorId}`);
         return await this.controlPlaneService.logOperatorOverride(body.operatorId, body.entityId, body.action, body.justification);
     }
+
+    @Get('dashboard')
+    async getOperatorDashboardMetrics() {
+        return await this.controlPlaneService.getOperatorDashboardMetrics();
+    }
 }

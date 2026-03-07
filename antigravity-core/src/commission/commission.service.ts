@@ -1,7 +1,7 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
 import { ProcessCommissionDto } from './dto/commission.dto';
+import { LedgerService } from '../ledger/ledger.service';
 
 @Injectable()
 export class CommissionService {
@@ -9,7 +9,7 @@ export class CommissionService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+        private readonly ledgerService: LedgerService,
     ) { }
 
     /**
@@ -71,14 +71,12 @@ export class CommissionService {
 
         this.logger.log(`Commission Processed: ${commission.id} | Amount: ${finalAmount} USD cents`);
 
-        // Doctrine 1: Emit to immutable Ledger Service
-        this.kafkaClient.emit('CommissionApproved', {
+        // Doctrine 1: Record to immutable Ledger Service synchronously
+        await this.ledgerService.recordCommission({
             commissionId: commission.id,
             creatorId: commission.creatorId,
             campaignId: commission.campaignId,
             amount: commission.amount,
-            currency: commission.currency,
-            timestamp: new Date().toISOString()
         });
     }
 }

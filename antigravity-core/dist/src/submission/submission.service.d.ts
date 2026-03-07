@@ -1,35 +1,36 @@
-import { ClientKafka } from '@nestjs/microservices';
 import { DatabaseService } from '../database/database.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
+import { AiVerificationService } from '../ai-verification/ai-verification.service';
+import { CommissionService } from '../commission/commission.service';
 export declare class SubmissionService {
     private prisma;
-    private readonly kafkaClient;
+    private readonly aiVerificationService;
+    private readonly commissionService;
     private readonly logger;
-    constructor(prisma: DatabaseService, kafkaClient: ClientKafka);
-    onModuleInit(): Promise<void>;
+    constructor(prisma: DatabaseService, aiVerificationService: AiVerificationService, commissionService: CommissionService);
     createSubmission(dto: CreateSubmissionDto): Promise<{
         id: string;
         status: import("@prisma/client").$Enums.SubmissionStatus;
-        createdAt: Date;
-        updatedAt: Date;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
         fraudScore: number;
         contentData: import("@prisma/client/runtime/client").JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
         campaignId: string;
         creatorId: string;
     }>;
     getCreatorSubmissions(): Promise<{
         id: string;
         status: import("@prisma/client").$Enums.SubmissionStatus;
-        createdAt: Date;
-        updatedAt: Date;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
         fraudScore: number;
         contentData: import("@prisma/client/runtime/client").JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
         campaignId: string;
         creatorId: string;
     }[]>;
@@ -46,26 +47,26 @@ export declare class SubmissionService {
     } & {
         id: string;
         status: import("@prisma/client").$Enums.SubmissionStatus;
-        createdAt: Date;
-        updatedAt: Date;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
         fraudScore: number;
         contentData: import("@prisma/client/runtime/client").JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
         campaignId: string;
         creatorId: string;
     })[]>;
     verifySubmission(id: string, status: 'approved' | 'rejected'): Promise<{
         id: string;
         status: import("@prisma/client").$Enums.SubmissionStatus;
-        createdAt: Date;
-        updatedAt: Date;
         deterministicPassed: boolean;
         aiConfidence: number | null;
         aiCompliance: boolean | null;
         fraudScore: number;
         contentData: import("@prisma/client/runtime/client").JsonValue;
+        createdAt: Date;
+        updatedAt: Date;
         campaignId: string;
         creatorId: string;
     }>;

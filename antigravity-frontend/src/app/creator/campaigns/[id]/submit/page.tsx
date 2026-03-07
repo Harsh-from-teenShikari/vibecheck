@@ -152,8 +152,13 @@ export default function CampaignSubmitPage({ params }: { params: Promise<{ id: s
                                 </ul>
                             </div>
                         </CardContent>
-                        <CardFooter className="bg-muted/20 border-t pt-6">
-                            <Button size="lg" className="w-full text-md font-bold" onClick={handleSubmit} disabled={submitting || !contentUrl}>
+                        <CardFooter className="bg-muted/20 border-t pt-6 flex flex-col gap-2">
+                            {campaign?.rewardPool <= 0 ? (
+                                <div className="w-full text-center p-3 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                                    This campaign has exhausted its reward pool and is no longer accepting submissions.
+                                </div>
+                            ) : null}
+                            <Button size="lg" className="w-full text-md font-bold" onClick={handleSubmit} disabled={submitting || !contentUrl || campaign?.rewardPool <= 0}>
                                 {submitting ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : null}
                                 Run AI Analysis & Submit
                             </Button>

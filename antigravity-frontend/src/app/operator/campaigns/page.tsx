@@ -85,10 +85,10 @@ export default function OperatorCampaigns() {
         try {
             const payload = {
                 ...newCampaign,
-                minFollowers: Number(newCampaign.minFollowers),
-                targetMetric: Number(newCampaign.targetMetric),
-                targetReward: Number(newCampaign.targetReward),
-                rewardPool: Number(newCampaign.rewardPool),
+                minFollowers: Number(newCampaign.minFollowers) || 0,
+                targetMetric: Number(newCampaign.targetMetric) || 0,
+                targetReward: Number(newCampaign.targetReward) || 0,
+                rewardPool: Number(newCampaign.rewardPool) || 0,
                 requiredHashtags: newCampaign.requiredHashtags.split(',').map(s => s.trim()).filter(Boolean)
             };
             await api.post('/campaign', payload);
@@ -102,8 +102,10 @@ export default function OperatorCampaigns() {
             setNewCampaign({
                 name: '', type: 'CLIPPING', region: 'Global', minFollowers: 0, targetNiche: '', targetMetric: 0, targetReward: 0, rewardPool: 0, requiredHashtags: ''
             });
-        } catch (error) {
-            console.error('Failed to create campaign', error);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || error.message;
+            console.error('Failed to create campaign', errorMsg);
+            alert(`Error: ${Array.isArray(errorMsg) ? errorMsg.join(', ') : JSON.stringify(errorMsg)}`);
         } finally {
             setIsCreating(false);
         }
@@ -153,10 +155,10 @@ export default function OperatorCampaigns() {
         try {
             const payload = {
                 ...editCampaignData,
-                minFollowers: Number(editCampaignData.minFollowers),
-                targetMetric: Number(editCampaignData.targetMetric),
-                targetReward: Number(editCampaignData.targetReward),
-                rewardPool: Number(editCampaignData.rewardPool),
+                minFollowers: Number(editCampaignData.minFollowers) || 0,
+                targetMetric: Number(editCampaignData.targetMetric) || 0,
+                targetReward: Number(editCampaignData.targetReward) || 0,
+                rewardPool: Number(editCampaignData.rewardPool) || 0,
                 requiredHashtags: typeof editCampaignData.requiredHashtags === 'string'
                     ? editCampaignData.requiredHashtags.split(',').map(s => s.trim()).filter(Boolean)
                     : editCampaignData.requiredHashtags
@@ -166,8 +168,10 @@ export default function OperatorCampaigns() {
             setEditSheetOpen(false);
             setLoading(true);
             await fetchCampaigns();
-        } catch (error) {
-            console.error('Failed to edit campaign', error);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || error.message;
+            console.error('Failed to edit campaign', errorMsg);
+            alert(`Error: ${Array.isArray(errorMsg) ? errorMsg.join(', ') : JSON.stringify(errorMsg)}`);
         } finally {
             setIsEditing(false);
         }

@@ -1,10 +1,10 @@
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
 import { ProcessCommissionDto } from './dto/commission.dto';
+import { LedgerService } from '../ledger/ledger.service';
 export declare class CommissionService {
     private prisma;
-    private readonly kafkaClient;
+    private readonly ledgerService;
     private readonly logger;
-    constructor(prisma: DatabaseService, kafkaClient: ClientKafka);
+    constructor(prisma: DatabaseService, ledgerService: LedgerService);
     evaluateAndProcessCommission(dto: ProcessCommissionDto): Promise<void>;
 }

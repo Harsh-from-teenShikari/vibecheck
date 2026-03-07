@@ -15,7 +15,6 @@ var PayoutController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PayoutController = void 0;
 const common_1 = require("@nestjs/common");
-const microservices_1 = require("@nestjs/microservices");
 const payout_service_1 = require("./payout.service");
 const payout_dto_1 = require("./dto/payout.dto");
 let PayoutController = PayoutController_1 = class PayoutController {
@@ -26,10 +25,6 @@ let PayoutController = PayoutController_1 = class PayoutController {
     }
     async initiatePayout(body) {
         return await this.payoutService.requestPayout(body);
-    }
-    async handlePayoutProcessed(message) {
-        this.logger.log(`Ledger event caught [PayoutProcessed] for: ${message.payoutId}`);
-        await this.payoutService.handlePayoutConfirmation(message);
     }
     async getPayoutHistory(creatorId) {
         return await this.payoutService.getPayoutHistory(creatorId);
@@ -43,13 +38,6 @@ __decorate([
     __metadata("design:paramtypes", [payout_dto_1.CreatePayoutDto]),
     __metadata("design:returntype", Promise)
 ], PayoutController.prototype, "initiatePayout", null);
-__decorate([
-    (0, microservices_1.EventPattern)('PayoutProcessed'),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], PayoutController.prototype, "handlePayoutProcessed", null);
 __decorate([
     (0, common_1.Get)('history/:creatorId'),
     __param(0, (0, common_1.Param)('creatorId')),

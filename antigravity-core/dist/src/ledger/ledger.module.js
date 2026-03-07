@@ -9,7 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LedgerModule = void 0;
 const common_1 = require("@nestjs/common");
 const database_module_1 = require("../database/database.module");
-const kafka_module_1 = require("../kafka/kafka.module");
 const ledger_service_1 = require("./ledger.service");
 const ledger_controller_1 = require("./ledger.controller");
 let LedgerModule = class LedgerModule {
@@ -17,7 +16,7 @@ let LedgerModule = class LedgerModule {
 exports.LedgerModule = LedgerModule;
 exports.LedgerModule = LedgerModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule, kafka_module_1.KafkaModule],
+        imports: [database_module_1.DatabaseModule],
         controllers: [ledger_controller_1.LedgerController],
         providers: [ledger_service_1.LedgerService],
         exports: [ledger_service_1.LedgerService]

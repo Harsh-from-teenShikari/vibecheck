@@ -10,11 +10,13 @@ exports.IdentityModule = void 0;
 const common_1 = require("@nestjs/common");
 const identity_service_1 = require("./identity.service");
 const identity_controller_1 = require("./identity.controller");
+const ledger_module_1 = require("../ledger/ledger.module");
 let IdentityModule = class IdentityModule {
 };
 exports.IdentityModule = IdentityModule;
 exports.IdentityModule = IdentityModule = __decorate([
     (0, common_1.Module)({
+        imports: [ledger_module_1.LedgerModule],
         controllers: [identity_controller_1.IdentityController],
         providers: [identity_service_1.IdentityService]
     })

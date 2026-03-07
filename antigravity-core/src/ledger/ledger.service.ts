@@ -1,6 +1,5 @@
-import { Injectable, Logger, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { ClientKafka } from '@nestjs/microservices';
 import { RecordCommissionDto, GeneratePayoutDto } from './dto/ledger-events.dto';
 
 @Injectable()
@@ -9,7 +8,6 @@ export class LedgerService {
 
     constructor(
         private prisma: DatabaseService,
-        @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
     ) { }
 
     /**
@@ -47,15 +45,6 @@ export class LedgerService {
             });
 
             this.logger.log(`Successfully persisted ${entries.count} Ledger Entries for Commission ${dto.commissionId}`);
-
-            // Doctrine 2: Event-Driven Doctrine
-            this.kafkaClient.emit('LedgerEntryCreated', {
-                commissionId: dto.commissionId,
-                creatorId: dto.creatorId,
-                amount: dto.amount,
-                type: 'COMMISSION_RECORDED',
-                timestamp: new Date().toISOString()
-            });
 
             return entries;
         });
@@ -130,15 +119,6 @@ export class LedgerService {
                         payoutId: dto.payoutId,
                     },
                 ],
-            });
-
-            // Doctrine 2: Emit Payout Event
-            this.kafkaClient.emit('PayoutProcessed', {
-                payoutId: dto.payoutId,
-                creatorId: dto.creatorId,
-                amount: dto.amount,
-                status: 'completed',
-                timestamp: new Date().toISOString()
             });
 
             return entries;
